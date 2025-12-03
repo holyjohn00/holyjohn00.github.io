@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools for Marketing | Seminar</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-secondary: #ec4899; /* Pink */
+            --accent-success: #22c55e;
+            --card-bg: #1e293b;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --usjr-green: #006400;
+            --usjr-gold: #FFD700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Slide Container --- */
+        #presentation {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0.95) translateY(20px);
+            padding: 4rem 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start; /* Align text to the left */
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+            z-index: 10;
+        }
+
+        /* --- Typography --- */
+        h1 { font-size: 4rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem; }
+        h2 { font-size: 3rem; font-weight: 700; margin-bottom: 2rem; color: var(--accent-primary); }
+        h3 { font-size: 1.5rem; margin-bottom: 1rem; font-weight: 600; }
+        p { font-size: 1.25rem; line-height: 1.6; color: #cbd5e1; margin-bottom: 1.5rem; max-width: 900px; }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Components --- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--accent-primary); }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        /* --- Comparison Tables (Free vs Paid) --- */
+        .comparison-container {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            align-items: stretch;
+            margin-top: 1rem;
+        }
+        
+        .comp-col {
+            flex: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .comp-col.paid { border-top: 4px solid var(--accent-secondary); }
+        .comp-col.free { border-top: 4px solid var(--accent-success); }
+
+        .feature-list li {
+            list-style: none;
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        
+        .feature-list-small li {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Interactive Explorer Slide --- */
+        .explorer-container {
+            width: 100%;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 1rem;
+            overflow: hidden;
+            color: #0f172a;
+        }
+
+        /* --- Software Mockups (General) --- */
+        .mockup-window {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            font-family: sans-serif;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .mockup-header {
+            background: #2d2d2d;
+            padding: 10px 15px;
+            display: flex;
+            gap: 8px;
+        }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+        
+        .mockup-body { padding: 20px; min-height: 250px; position: relative; }
+        
+        /* Social Searcher Mockup */
+        .search-bar { width: 100%; height: 50px; background: white; border-radius: 25px; margin-bottom: 30px; display: flex; align-items: center; padding: 0 20px; color: #333; }
+        .sentiment-bar { height: 20px; width: 100%; background: #333; border-radius: 10px; overflow: hidden; display: flex; margin-top: 10px; }
+        .pos { background: #22c55e; width: 65%; } .neu { background: #94a3b8; width: 15%; } .neg { background: #ef4444; width: 20%; }
+
+        /* Surfer SEO Content Score Mockup */
+        .seo-score-container {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        .score-dial {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 10px solid #f1f5f9;
+            background: conic-gradient(#4ade80 75%, #f1f5f9 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .score-dial-inner {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .score-dial-inner h4 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #16a34a; /* Green 600 */
+            margin: 0;
+        }
+        .score-dial-inner span {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .score-list li {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .score-list li i {
+            margin-right: 10px;
+        }
+
+        /* Zapier Flow Mockup */
+        .zap-flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+        .zap-step {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            background: #334155; /* Slate */
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .zap-arrow {
+            color: var(--accent-success);
+            font-size: 1.5rem;
+        }
+
+
+        /* --- Explorer Specific Styles --- */
+        .explorer-header {
+            padding: 1rem;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-group button {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 0.5rem;
+            margin-right: 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #475569;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .filter-group button.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        .tool-grid {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+        .tool-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.2rem;
+            background: white;
+        }
+        .tool-card h4 { color: #0f172a; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .tool-card p { color: #64748b; font-size: 0.85rem; line-height: 1.4; margin-bottom: 1rem; }
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+        .badge.free { background: #dcfce7; color: #166534; }
+        .badge.paid { background: #fee2e2; color: #991b1b; }
+        .badge.freemium { background: #dbeafe; color: #1e40af; }
+        
+        /* --- Footer & Navigation (Same as before) --- */
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: grid;
+            place-items: center;
+        }
+
+        .nav-btn:hover { background: var(--accent-primary); }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .branding {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .usjr-badge {
+            background: var(--usjr-green);
+            color: var(--usjr-gold);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Overlay UI -->
+    <div class="branding">
+        <span class="usjr-badge">USJ-R</span>
+        <span>John Leeroy Gadiane | AI Tools for Marketing</span>
+    </div>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <div id="presentation">
+
+        <!-- SLIDE 1: Title (Approx. 3 mins) -->
+        <div class="slide active">
+            <h3 style="color: var(--accent-secondary); letter-spacing: 2px; text-transform: uppercase;">Seminar Series 2024</h3>
+            <h1>Marketing Trends & <br><span class="gradient-text">AI Tools</span></h1>
+            <p>Practical applications for the modern marketer. Today, we bridge theory and technology to get hands-on with the tools driving the next generation of marketing success.</p>
+            <div style="margin-top: 3rem; display: flex; gap: 1rem; align-items: center;">
+                <div style="width: 60px; height: 60px; background: #334155; border-radius: 50%; overflow: hidden; display: grid; place-items: center;">
+                    <i class="fa-solid fa-user-tie" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <h4 style="font-size: 1.2rem;">John Leeroy Gadiane</h4>
+                    <span style="color: #94a3b8; font-size: 0.9rem;">Faculty, CS/IT Department | USJ-R</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: What is AI? (Approx. 4 mins) -->
+        <div class="slide">
+            <h2>The Role of AI</h2>
+            <div class="comparison-container" style="align-items: center;">
+                <div style="flex: 1;">
+                    <p>AI's role is to scale human effort in three critical areas:</p>
+                    <ul class="feature-list" style="margin-top: 1rem;">
+                        <li><i class="fa-solid fa-brain" style="color: var(--accent-primary)"></i> **Personalization:** Tailoring millions of messages.</li>
+                        <li><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-secondary)"></i> **Prediction:** Forecasting sales and customer churn.</li>
+                        <li><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-success)"></i> **Automation:** Handling repetitive tasks instantly.</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; display: flex; justify-content: center; flex-direction: column;">
+                    <p style="font-size: 1rem; text-align: center; max-width: none; margin-bottom: 0;"></p>
+                    <i class="fa-solid fa-robot" style="font-size: 10rem; color: #334155; opacity: 0.5; margin-top: 1rem; align-self: center;"></i>
+                </div>
+            </div>
+            <blockquote style="margin-top: 3rem; border-left: 4px solid var(--accent-primary); padding-left: 1rem; font-style: italic; color: #94a3b8; font-size: 1rem;">
+                "75% of marketers now use AI for content creation, dramatically changing speed-to-market."
+            </blockquote>
+        </div>
+
+        <!-- SLIDE 3: The Toolkit Strategy (Rule of 3) (Approx. 5 mins) -->
+        <div class="slide">
+            <h2>The Toolkit Strategy: The Rule of 3</h2>
+            <p>The marketing technology landscape is crowded. Focus your learning on these three pillars to get hired.</p>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-pen-nib"></i></div>
+                    <h3>Text & Content</h3>
+                    <p style="font-size: 0.9rem;">The foundation: Writing copy, summarizing research, and generating SEO drafts.</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-image"></i></div>
+                    <h3>Visual & Video</h3>
+                    <p style="font-size: 0.9rem;">Driving engagement: Creating images, turning articles into video, and generating avatars.</p>
+                </div>
+                <div class="card">
+                    <div class="icon-box"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>Data & Prediction</h3>
+                    <p style="font-size: 0.9rem;">The ROI: Understanding customer journey, sentiment, and forecasting campaign success.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Content Tools (Comparison) (Approx. 5 mins) -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-pen-nib"></i> Tool Deep Dive: Content & Copy</h2>
+            <p>Screenshot Goal: **ChatGPT 4 interface** showing a complex prompt and a detailed response.</p>
+            
+            <div class="comparison-container">
+                <!-- FREE -->
+                <div class="comp-col free">
+                    <span class="badge free" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #dcfce7; color: #166534; margin-bottom: 1rem; display: inline-block;">FREE/FREEMIUM STARTER</span>
+                    <h3>ChatGPT / Claude 3</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">Use for ideation, first drafts, and summarization.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Unlimited brainstorming (GPT-3.5)</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Claude 3's excellent nuance/long-form</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Code and email drafting</li>
+                    </ul>
+                </div>
+
+                <!-- PAID -->
+                <div class="comp-col paid">
+                    <span class="badge paid" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #fee2e2; color: #991b1b; margin-bottom: 1rem; display: inline-block;">PROFESSIONAL / PAID TIER</span>
+                    <h3>Jasper AI</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">For enterprise scaling and brand consistency.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> **Brand Voice Memory:** Ensures tone is consistent.</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> Integrated SEO optimization tools.</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> Team workflows and compliance controls.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Visual Tools (Comparison) (Approx. 5 mins) -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-video"></i> Tool Deep Dive: Visuals & Video</h2>
+            <p>Screenshot Goal: **Lumen5 interface** showing a blog post being converted to video scenes automatically.</p>
+            
+            <div class="comparison-container">
+                <!-- FREE -->
+                <div class="comp-col free">
+                    <span class="badge free" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #dcfce7; color: #166534; margin-bottom: 1rem; display: inline-block;">FREE/FREEMIUM STARTER</span>
+                    <h3>Canva Magic Studio / Lumen5</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">User-friendly design and rapid video summary creation.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Magic Edit (object replacement)</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Text-to-Image generation (Basic)</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Convert articles to short videos (Lumen5)</li>
+                    </ul>
+                </div>
+
+                <!-- PAID -->
+                <div class="comp-col paid">
+                    <span class="badge paid" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #fee2e2; color: #991b1b; margin-bottom: 1rem; display: inline-block;">PROFESSIONAL / PAID TIER</span>
+                    <h3>HeyGen / Midjourney</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">High-fidelity, specialized generative outputs.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> **AI Avatars:** Presenters speaking your script.</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> Photorealistic art and product mockups (Midjourney).</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> High-quality multi-language voiceovers.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW SLIDE 6: SEO (Approx. 5 mins) - ADDED SURFER MOCKUP -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-globe"></i> Tool Deep Dive: AI for SEO</h2>
+            <p>Moving beyond keywords: Using AI to optimize content quality and rank for complex queries.</p>
+            
+            <div class="comparison-container">
+                <!-- FREE -->
+                <div class="comp-col free">
+                    <span class="badge free" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #dcfce7; color: #166534; margin-bottom: 1rem; display: inline-block;">FREE / ESSENTIAL</span>
+                    <h3>Google Search Console</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">Official diagnostics and performance data from Google.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Core Web Vitals audit.</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Find current ranking keywords.</li>
+                        <li><i class="fa-solid fa-check" style="color: var(--accent-success);"></i> Indexing and site health reports.</li>
+                    </ul>
+                </div>
+
+                <!-- PAID - SURFER MOCKUP -->
+                <div class="comp-col paid">
+                    <span class="badge paid" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #fee2e2; color: #991b1b; margin-bottom: 1rem; display: inline-block;">PROFESSIONAL / PAID TIER</span>
+                    <h3>Surfer SEO Content Editor</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">Content optimization using data from top-ranking pages.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    
+                    <div class="seo-score-container" style="background: transparent; box-shadow: none; padding: 0;">
+                        <div class="score-dial" style="background: conic-gradient(#4ade80 75%, #1e293b 0%);">
+                            <div class="score-dial-inner">
+                                <h4>75</h4>
+                                <span>Score</span>
+                            </div>
+                        </div>
+                        <ul class="score-list" style="padding: 0; margin: 0; list-style: none;">
+                            <li style="color: var(--text-color);"><i class="fa-solid fa-check" style="color: #4ade80;"></i> 14/15 Headings Used</li>
+                            <li style="color: var(--text-color);"><i class="fa-solid fa-check" style="color: #4ade80;"></i> 80% Keyword Density</li>
+                            <li style="color: var(--text-color);"><i class="fa-solid fa-xmark" style="color: #ef4444;"></i> 4/7 NLP Terms Missing</li>
+                            <li style="color: var(--text-color);"><i class="fa-solid fa-check" style="color: #4ade80;"></i> 1,500/1,600 Word Count</li>
+                        </ul>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; margin-bottom: 0;"> The score is your content's quality vs. competitors.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SLIDE 7: AUTOMATION (Approx. 5 mins) - ADDED ZAPIER MOCKUP -->
+        <div class="slide">
+            <h2><i class="fa-solid fa-robot"></i> Tool Deep Dive: Workflow Automation</h2>
+            <p>Connecting your tools so data flows automatically (marketing efficiency).</p>
+            
+            <div class="comparison-container">
+                <!-- FREE -->
+                <div class="comp-col free">
+                    <span class="badge free" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #dcfce7; color: #166534; margin-bottom: 1rem; display: inline-block;">FREE/FREEMIUM STARTER</span>
+                    <h3>Zapier</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">The leading tool for connecting two apps (if-this-then-that logic).</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <div class="zap-flow-container">
+                        <div class="zap-step" style="background: #3b82f6;">
+                            <i class="fa-solid fa-user-plus"></i><br>New Lead (Form)
+                        </div>
+                        <div class="zap-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="zap-step" style="background: #ef4444;">
+                            <i class="fa-solid fa-envelope"></i><br>Send Intro Email
+                        </div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; margin-bottom: 0;"> This is a 1-step Zap, free tier is limited to this complexity.</p>
+                </div>
+
+                <!-- PAID -->
+                <div class="comp-col paid">
+                    <span class="badge paid" style="padding: 5px 10px; border-radius: 4px; font-weight: bold; background: #fee2e2; color: #991b1b; margin-bottom: 1rem; display: inline-block;">PROFESSIONAL / PAID TIER</span>
+                    <h3>HighLevel (CRM)</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">All-in-one CRM and marketing automation platform.</p>
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+                    <ul class="feature-list feature-list-small">
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> **Multi-Channel Nurture:** Automate SMS, Email, Calls.</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> Built-in landing pages and forms.</li>
+                        <li><i class="fa-solid fa-star" style="color: var(--accent-secondary);"></i> Sales pipeline and analytics dashboard.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Deep Dive - Sentiment Analysis (Approx. 5 mins) -->
+        <div class="slide">
+            <h2>Trend: Sentiment Analysis & Social Listening</h2>
+            <p><strong>Goal:</strong> Detect brand reputation shifts instantly. AI extracts tone (Positive, Neutral, Negative) from massive comment volumes.</p>
+            
+            <div class="mockup-window" style="margin-top: 20px;">
+                <div class="mockup-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                    <span style="color: #888; font-size: 12px; margin-left: 10px;">social-searcher.com/search?q=Brand_Name</span>
+                </div>
+                <div class="mockup-body" style="background: #f8fafc; color: #333; min-height: 200px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">Tool: Social Searcher (Free to start)</h3>
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass" style="margin-right: 10px; color: #999;"></i>
+                        Jollibee Chickenjoy
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <h4 style="margin-bottom: 10px; color: #333;">Sentiment Breakdown</h4>
+                            <div style="font-size: 2rem; font-weight: bold; color: #22c55e;">65% <span style="font-size: 0.8rem; color: #666; font-weight: normal;">Positive</span></div>
+                            <div class="sentiment-bar">
+                                <div class="pos"></div><div class="neu"></div><div class="neg"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 5px;">
+                                <span style="color: #22c55e;">Positive (65%)</span><span style="color: #94a3b8;">Neutral (15%)</span><span style="color: #ef4444;">Negative (20%)</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; padding: 15px; border-radius: 8px;">
+                            <h4 style="margin-bottom: 10px; color: #333;">Why it matters:</h4>
+                            <ul style="font-size: 0.9rem; list-style: none; padding: 0;">
+                                <li style="margin-bottom: 5px; color: #475569;"><i class="fa-solid fa-arrow-up-right-dots" style="color: #f59e0b; margin-right: 8px;"></i> Early crisis detection.</li>
+                                <li style="margin-bottom: 5px; color: #475569;"><i class="fa-solid fa-comment-dots" style="color: #6366f1; margin-right: 8px;"></i> Spotting untapped product ideas.</li>
+                                <li style="margin-bottom: 0px; color: #475569;"><i class="fa-solid fa-star" style="color: var(--accent-secondary); margin-right: 8px;"></i> Identifying happy brand advocates.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; margin-bottom: 0;"> This represents the analytics view of a paid tool like Brand24, showing detailed trends over time.</p>
+        </div>
+
+        <!-- SLIDE 9: Deep Dive - Predictive Analytics (Approx. 5 mins) -->
+        <div class="slide">
+            <h2>Trend: Predictive Analytics</h2>
+            <p><strong>Goal:</strong> Optimize marketing spend by targeting customers most likely to convert or leave (churn).</p>
+            
+            <div class="mockup-window" style="margin-top: 20px;">
+                <div class="mockup-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                    <span style="color: #888; font-size: 12px; margin-left: 10px;">analytics.google.com/predictive</span>
+                </div>
+                <div class="mockup-body" style="background: #fff; color: #333; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px;">
+                    <h3 style="color: #333; margin-bottom: 20px;">GA4 Feature: Churn Probability (The Next 7 Days)</h3>
+                    <p style="font-size: 1rem; color: #666; text-align: center; margin-bottom: 30px;"> This shows a chart plotting users segmented by low, medium, and high propensity to purchase.</p>
+                    <div style="display: flex; gap: 20px; width: 100%; max-width: 600px;">
+                        <div style="flex: 1; background: #f1f5f9; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #333;">Free Tool: GA4</h4>
+                            <p style="font-size: 0.85rem; margin: 0; color: #475569;">Uses Machine Learning to automatically segment users by risk.</p>
+                        </div>
+                        <div style="flex: 1; background: #f1f5f9; padding: 15px; border-radius: 8px;">
+                            <h4 style="color: #333;">Paid Tool: Pecan AI</h4>
+                            <p style="font-size: 0.85rem; margin: 0; color: #475569;">No-code platform to build highly accurate custom models for sales.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SLIDE 10: AR/Voice (Quick Trends) (Approx. 4 mins) -->
+        <div class="slide">
+            <h2>Emerging Trends: AR & Voice</h2>
+            <p>Where AI is going next: The shift from screens to experience.</p>
+            
+            <div class="comparison-container" style="align-items: flex-start;">
+                <div class="comp-col" style="flex: 1.5;">
+                    <div class="icon-box" style="background: rgba(236, 72, 153, 0.2); color: var(--accent-secondary);"><i class="fa-solid fa-cube"></i></div>
+                    <h3>Augmented Reality (AR + AI)</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 0;">AI generates 3D models and integrates them into the real world.</p>
+                    <ul class="feature-list feature-list-small" style="margin-top: 0.5rem;">
+                        <li>Virtual try-ons (e.g., Snapchat Lenses).</li>
+                        <li>Interactive product placement (See a couch in your living room).</li>
+                    </ul>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; margin-bottom: 0;"> Illustrates a common e-commerce AR application.</p>
+                </div>
+                <div class="comp-col">
+                    <div class="icon-box" style="background: rgba(34, 197, 94, 0.2); color: var(--accent-success);"><i class="fa-solid fa-microphone"></i></div>
+                    <h3>Voice Search Optimization</h3>
+                    <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 0;">Marketing for Alexa and Google Assistant.</p>
+                    <ul class="feature-list feature-list-small" style="margin-top: 0.5rem;">
+                        <li>Focus on long-tail, conversational keywords.</li>
+                        <li>Tool: **AnswerThePublic** (Freemium) to find questions.</li>
+                    </ul>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; margin-bottom: 0;"> Shows the question wheel visualization.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SLIDE 11: The Ethical Catch (Approx. 5 mins) -->
+        <div class="slide">
+            <h2>The Catch: Ethics, Bias, and Data</h2>
+            <p style="color: var(--accent-secondary);">The machine is only as good as the data you feed it.</p>
+            
+            <div class="card-grid">
+                <div class="card" style="border-left: 4px solid #f97316;">
+                    <div class="icon-box" style="background: rgba(249, 115, 22, 0.2); color: #f97316;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3>AI Bias</h3>
+                    <p style="font-size: 0.9rem;">If trained on biased data, AI will produce biased marketing (e.g., excluding demographics from ad targeting).</p>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; margin-bottom: 0;">[attachment_0](attachment) Illustrates unequal representation in data.</p>
+                </div>
+                <div class="card" style="border-left: 4px solid #3b82f6;">
+                    <div class="icon-box" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6;"><i class="fa-solid fa-gavel"></i></div>
+                    <h3>Copyright & Ownership</h3>
+                    <p style="font-size: 0.9rem;">Who owns the image generated by Midjourney? Always use tools with commercial licenses.</p>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; margin-bottom: 0;"></p>
+                </div>
+                <div class="card" style="border-left: 4px solid #fde047;">
+                    <div class="icon-box" style="background: rgba(253, 224, 71, 0.2); color: #fde047;"><i class="fa-solid fa-lock"></i></div>
+                    <h3>Data Privacy</h3>
+                    <p style="font-size: 0.9rem;">Be careful what information you upload to public AI models like ChatGPT.</p>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem; margin-bottom: 0;">[attachment_1](attachment) Represents data security.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Interactive Explorer (Demo Time: 7 mins) -->
+        <div class="slide">
+            <h2 style="margin-bottom: 0.5rem;">Interactive Tool Explorer</h2>
+            <p style="margin-bottom: 1rem; font-size: 1rem;">Let's find the best free and paid tools based on your needs.</p>
+            
+            <div class="explorer-container">
+                <div class="explorer-header">
+                    <h3 style="margin: 0; font-size: 1.2rem; color: #0f172a;">AI Marketing Tools</h3>
+                    <div class="filter-group" id="categoryFilters">
+                        <!-- Buttons injected via JS -->
+                    </div>
+                </div>
+                <div class="tool-grid" id="toolGrid">
+                    <!-- Cards injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SLIDE 13: Action Plan (Approx. 4 mins) -->
+        <div class="slide">
+            <h2>Your 3-Step Action Plan</h2>
+            <p>Don't just listen—act. Here's how to integrate AI into your marketing skills today.</p>
+            
+            <div class="comparison-container" style="margin-top: 1.5rem;">
+                <div class="comp-col" style="border-top: 4px solid #06b6d4;">
+                    <h3 style="color: #06b6d4;">1. Master the Free Tools</h3>
+                    <p style="font-size: 1rem;">**Homework:** Become an expert at **GA4** and **ChatGPT**. These are foundational skills for any entry-level marketing role.</p>
+                </div>
+                <div class="comp-col" style="border-top: 4px solid #8b5cf6;">
+                    <h3 style="color: #8b5cf6;">2. Build a Portfolio</h3>
+                    <p style="font-size: 1rem;">Use **Canva** to design ads, **Lumen5** to make a promo video, and **Zapier** to connect a test form to a Google Sheet.</p>
+                </div>
+                <div class="comp-col" style="border-top: 4px solid #ef4444;">
+                    <h3 style="3. Focus on Strategy">3. Focus on Strategy</h3>
+                    <p style="font-size: 1rem;">AI handles the execution. Your job is the **prompt** and the **analysis**. Learn *why* a metric matters, not just how to calculate it.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Conclusion (Approx. 5 mins + Q&A) -->
+        <div class="slide">
+            <h1>Q&A & Final Thoughts</h1>
+            <p>The job of the marketer has changed. Your value is now amplified by the tools you choose to use.</p>
+            <p style="font-size: 1.5rem; font-weight: 600; color: var(--accent-primary);">"Don't fear AI. Learn it, leverage it, and lead with it."</p>
+            
+            <div style="margin-top: 3rem; display: flex; gap: 2rem; justify-content: flex-start; width: 100%;">
+                <div style="text-align: left;">
+                    <div style="font-size: 3rem; color: var(--accent-secondary);"><i class="fa-solid fa-envelope"></i></div>
+                    <p style="margin-top: 10px; font-size: 1rem; margin-bottom: 0;">john.gadiane@usjr.edu.ph</p>
+                </div>
+                <div style="text-align: left;">
+                    <div style="font-size: 3rem; color: var(--accent-secondary);"><i class="fa-brands fa-linkedin"></i></div>
+                    <p style="margin-top: 10px; font-size: 1rem; margin-bottom: 0;">/in/john-leeroy</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Presentation Logic ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            // Update Progress Bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Keyboard Nav
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // --- Interactive Explorer Data & Logic ---
+        const tools = [
+            { name: "ChatGPT", category: "Content", pricing: "Freemium", desc: "The standard for conversational AI and drafting text." },
+            { name: "Jasper AI", category: "Content", pricing: "Paid", desc: "Enterprise brand voice & SEO integration." },
+            { name: "Lumen5", category: "Video", pricing: "Freemium", desc: "Text-to-Video generation for short summaries." },
+            { name: "HeyGen", category: "Video", pricing: "Paid", desc: "Realistic AI Avatars for presentations and ads." },
+            { name: "Canva", category: "Design", pricing: "Freemium", desc: "Design with Magic AI tools (Background removal, Magic Write)." },
+            { name: "GA4", category: "Analytics", pricing: "Free", desc: "Free predictive web analytics (Churn/Purchase Probability)." },
+            { name: "Surfer SEO", category: "SEO", pricing: "Paid", desc: "Content optimization tool for top Google rankings." },
+            { name: "Social Searcher", category: "Analytics", pricing: "Free", desc: "Free real-time sentiment monitoring." },
+            { name: "Buffer", category: "Social", pricing: "Freemium", desc: "Schedule posts with integrated AI captioning." },
+            { name: "Zapier", category: "Automation", pricing: "Freemium", desc: "Connect two apps (e.g., Form to Email) with simple Zaps." },
+            { name: "HighLevel", category: "Automation", pricing: "Paid", desc: "All-in-one CRM for email, SMS, and sales pipeline." },
+            { name: "Brand24", category: "Analytics", pricing: "Paid", desc: "Advanced social listening and crisis detection alerts." }
+        ];
+
+        const categories = ["All", "Content", "Video", "Analytics", "SEO", "Automation", "Design", "Social"];
+        let activeCategory = "All";
+
+        function renderExplorer() {
+            // Render Buttons
+            const btnContainer = document.getElementById('categoryFilters');
+            if (!btnContainer) return; // Check if element exists on current slide
+            
+            btnContainer.innerHTML = categories.map(cat => 
+                `<button class="${cat === activeCategory ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+            ).join('');
+
+            // Render Grid
+            const grid = document.getElementById('toolGrid');
+            if (!grid) return; // Check if element exists on current slide
+
+            const filtered = activeCategory === "All" ? tools : tools.filter(t => t.category === activeCategory);
+            
+            grid.innerHTML = filtered.map(tool => `
+                <div class="tool-card">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <h4>${tool.name}</h4>
+                        <span class="badge ${tool.pricing.toLowerCase()}">${tool.pricing}</span>
+                    </div>
+                    <p>${tool.desc}</p>
+                    <div style="font-size:0.8rem; color:#94a3b8; font-weight:600;">${tool.category}</div>
+                </div>
+            `).join('');
+            
+            if (filtered.length === 0) {
+                 grid.innerHTML = '<p style="color: #475569; grid-column: 1 / -1; text-align: center; padding: 20px;">No tools found in this category.</p>';
+            }
+        }
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            renderExplorer();
+        }
+
+        // Init
+        window.onload = function() {
+            updateSlide();
+             // The check ensures renderExplorer only runs on the specific slide where the elements exist
+            if (document.getElementById('toolGrid')) {
+                renderExplorer();
+            }
+        };
+
+        // Re-render explorer when navigating to that specific slide
+        slides.forEach(slide => {
+            new MutationObserver((mutationsList, observer) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class' && mutation.target.classList.contains('active')) {
+                        if (mutation.target.querySelector('#toolGrid')) {
+                            renderExplorer();
+                        }
+                    }
+                }
+            }).observe(slide, { attributes: true });
+        });
+    </script>
+</body>
+</html>
+
