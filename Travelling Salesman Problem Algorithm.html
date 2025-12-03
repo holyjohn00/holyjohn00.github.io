@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveling Salesman Problem (TSP) - Greedy Approach</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load KaTeX for beautiful math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" xintegrity="sha384-GvrF2FX60T2T48u7v1tI3Fk/Bv1/c/l26sF4gD7/eQ95A8Z08lK3s" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" xintegrity="sha384-TTRpX49vL0z/sJ8vK4c8+Y8WJgT6cR5G/yvT1B0c3oYF5K+10J8jK9g+dE9k9R6f" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" xintegrity="sha384-M4b1k1K8fJ0XWf2m31a9Xl2L6vU1a7/iB43F7ZfD39NnK1z58t5B20Z3vV4kR0F9z" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        /* Custom Styles for Professional Look */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8;
+        }
+        .slide {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            transition: opacity 0.5s ease-in-out;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 12px;
+        }
+        .slide-title {
+            color: #3b82f6; /* Blue-600 */
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #60a5fa;
+            padding-bottom: 0.5rem;
+        }
+        .slide-content li {
+            margin-bottom: 0.75rem;
+        }
+        .math-block {
+            padding: 1rem 1.5rem;
+            background-color: #e0f2fe; /* Sky-100 */
+            border-left: 5px solid #0369a1; /* Sky-700 */
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-size: 1.25rem;
+        }
+        /* Table Styles for Example Slide */
+        .example-table th, .example-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+        .example-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            .slide-title {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+            .slide-content {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- SLIDESHOW CONTAINER -->
+    <div id="slideshow" class="max-w-6xl mx-auto h-[80vh] bg-white rounded-xl shadow-2xl relative overflow-hidden">
+        
+        <!-- Slide 1: Title & Introduction -->
+        <div id="slide-0" class="slide absolute inset-0 opacity-100">
+            <h1 class="slide-title text-4xl md:text-5xl lg:text-6xl text-center">
+                The Traveling Salesman Problem (TSP)
+            </h1>
+            <h2 class="text-2xl md:text-3xl font-light text-gray-700 mt-4 text-center">
+                A **Greedy Approach** (Nearest Neighbor Heuristic)
+            </h2>
+            <p class="mt-8 text-lg text-gray-500">Discrete Structures II</p>
+        </div>
+
+        <!-- Slide 2: What is TSP? (Definition) -->
+        <div id="slide-1" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">What is the Traveling Salesman Problem?</h2>
+            <div class="slide-content text-xl max-w-3xl mx-auto text-gray-700">
+                <ul class="list-disc list-inside space-y-3">
+                    <li>**The Challenge:** Find the shortest route that visits a list of cities exactly once and returns to the starting city.</li>
+                    <li>**Graph Theory Definition:** Given a **complete weighted graph**, find the **Hamiltonian Cycle** of minimum cost.</li>
+                    <li>A **Hamiltonian Cycle** visits every node (city) exactly once, starting and ending at the same node.</li>
+                    <li>The input is typically represented as an **Adjacency Matrix**.</li>
+                </ul>
+                <p class="mt-6 text-center text-sm italic text-gray-500">
+                    
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 3: Complexity - Brute Force -->
+        <div id="slide-2" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Why is TSP Hard? (The $O(N!)$ Problem)</h2>
+            <div class="slide-content text-xl max-w-4xl mx-auto text-gray-700">
+                <p class="mb-4">TSP is an **NP-Hard** problem, meaning finding the guaranteed optimal solution is computationally infeasible for large inputs.</p>
+                <h3 class="text-2xl font-semibold text-blue-500 mb-3">1. The Naive (Brute Force) Approach</h3>
+                <ul class="list-disc list-inside ml-6 space-y-2">
+                    <li>**Method:** Compute the cost of all possible tours by trying every permutation of node orderings.</li>
+                    <li>**Complexity:** $O(n!)$ (n-factorial time).</li>
+                    <li>**The Problem:** Factorial growth is too slow. A graph with only $N=20$ nodes has over $2.4 \times 10^{18}$ possible tours.</li>
+                    <li>*Conclusion: We need faster, non-optimal methods (Heuristics) for large graphs.*</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Greedy vs. Optimal Comparison -->
+        <div id="slide-3" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Trade-Off: Speed vs. Optimality</h2>
+            <div class="slide-content text-xl max-w-5xl mx-auto text-gray-700 text-center">
+                <h3 class="text-2xl font-semibold text-blue-500 mb-4">Greedy Approach: The Speed Solution</h3>
+                <p class="mb-6">Greedy algorithms prioritize finding a *good* solution *quickly*, sacrificing the guarantee of finding the *best* solution.</p>
+
+                <div class="flex justify-center items-center space-x-8">
+                    <div class="p-6 bg-red-100 rounded-lg shadow-md w-1/3">
+                        <p class="text-2xl font-bold text-red-600">Optimal (DP/Brute Force)</p>
+                        <p class="text-xl mt-2 font-mono">$O(n^2 2^n)$ or $O(n!)$</p>
+                        <p class="text-sm mt-1">Guaranteed Shortest Tour</p>
+                    </div>
+                    <div class="p-6 bg-green-100 rounded-lg shadow-md w-1/3">
+                        <p class="text-2xl font-bold text-green-600">Greedy (Heuristic)</p>
+                        <p class="text-xl mt-2 font-mono">$O(n^2)$</p>
+                        <p class="text-sm mt-1">Fast, but only locally optimal</p>
+                    </div>
+                </div>
+
+                <p class="mt-8 text-lg font-bold text-gray-700">
+                    The Nearest Neighbor algorithm is the simplest TSP heuristic, running in $O(N^2)$ time.
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 5: The Greedy Philosophy -->
+        <div id="slide-4" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">The Greedy Philosophy and Local Optima</h2>
+            <div class="slide-content text-xl max-w-4xl mx-auto text-gray-700">
+                <p class="mb-4">A Greedy algorithm always makes the choice that looks **best at the moment**.</p>
+                
+                <h3 class="text-2xl font-semibold text-blue-500 mb-3">Greedy Decision Making:</h3>
+                <ul class="list-disc list-inside ml-6 space-y-3">
+                    <li>**Local Optimization:** At each step, choose the path segment with the lowest immediate cost.</li>
+                    <li>**No Look-Ahead:** It does not consider the future consequences of the current choice (which might lead to a dead-end or very expensive final steps).</li>
+                    <li>**Issue of Local Optima:** The series of locally optimal choices may *not* lead to the globally optimal (shortest) tour.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 6: Nearest Neighbor Algorithm Steps -->
+        <div id="slide-5" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Algorithm: Nearest Neighbor Method</h2>
+            <div class="slide-content text-xl max-w-4xl mx-auto text-gray-700">
+                <p class="mb-4">This method constructs the tour by always choosing the shortest available path from the current city.</p>
+                
+                <h3 class="text-2xl font-semibold text-blue-500 mb-3">Steps for Nearest Neighbor:</h3>
+                <ol class="list-decimal list-inside ml-6 space-y-3">
+                    <li>**Start:** Choose an arbitrary starting city (e.g., City 0).</li>
+                    <li>**Iterate:** While there are unvisited cities:
+                        <ul class="list-disc list-inside ml-6 space-y-1">
+                            <li>From the current city, select the unvisited city that has the **minimum travel cost**.</li>
+                            <li>Add this edge to the tour and mark the new city as visited.</li>
+                        </ul>
+                    </li>
+                    <li>**Close the Tour:** After all cities are visited, return from the final city to the initial starting city.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Slide 7: Example Setup (Distance Matrix) -->
+        <div id="slide-6" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Example Trace Setup: 4-Node TSP</h2>
+            <div class="slide-content text-lg max-w-5xl mx-auto text-gray-700 flex flex-col md:flex-row justify-center items-center md:space-x-12">
+                <div class="w-full md:w-1/2">
+                    <p class="mb-4 font-semibold text-center">We will use the following distance matrix. Start node $s=0$.</p>
+                    <!-- Distance Matrix -->
+                    <h3 class="text-xl font-bold mb-2 text-blue-600">Distance Matrix (Dist)</h3>
+                    <table class="example-table w-full">
+                        <thead>
+                            <tr><th>From $\searrow$ To $\to$</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th>0</th><td>-</td><td>10</td><td>15</td><td>20</td></tr>
+                            <tr><th>1</th><td>10</td><td>-</td><td>35</td><td>25</td></tr>
+                            <tr><th>2</th><td>15</td><td>35</td><td>-</td><td>30</td></tr>
+                            <tr><th>3</th><td>20</td><td>25</td><td>30</td><td>-</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="w-full md:w-1/2 mt-6 md:mt-0">
+                    <p class="mt-6 text-center text-sm italic text-gray-500">
+                        
+                    </p>
+                    <p class="text-center mt-4 font-semibold text-blue-800">
+                        Goal: Tour (0 $\to$ ? $\to$ ? $\to$ ? $\to$ 0)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Example Trace Walkthrough -->
+        <div id="slide-7" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Example Trace: Nearest Neighbor Walkthrough</h2>
+            <div class="slide-content text-lg max-w-5xl mx-auto text-gray-700">
+                
+                <h3 class="text-2xl font-semibold text-blue-500 mb-3">Step 1: Start at City 0</h3>
+                <ul class="list-disc list-inside ml-6 space-y-1">
+                    <li>Current City: **0**. Visited: {0}.</li>
+                    <li>Neighbors: 1 (Cost 10), 2 (Cost 15), 3 (Cost 20).</li>
+                    <li>**Greedy Choice:** Move to City **1** (Cost 10).</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold text-blue-500 mt-4 mb-3">Step 2: From City 1</h3>
+                <ul class="list-disc list-inside ml-6 space-y-1">
+                    <li>Current City: **1**. Visited: {0, 1}. Remaining: {2, 3}.</li>
+                    <li>Neighbors: 2 (Cost 35), 3 (Cost 25).</li>
+                    <li>**Greedy Choice:** Move to City **3** (Cost 25). Tour Cost: 10 + 25 = 35.</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold text-blue-500 mt-4 mb-3">Step 3: From City 3</h3>
+                <ul class="list-disc list-inside ml-6 space-y-1">
+                    <li>Current City: **3**. Visited: {0, 1, 3}. Remaining: {2}.</li>
+                    <li>Neighbors: 2 (Cost 30).</li>
+                    <li>**Greedy Choice:** Move to City **2** (Cost 30). Tour Cost: 35 + 30 = 65.</li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold text-green-600 mt-4 mb-3">Step 4: Close the Tour</h3>
+                <ul class="list-disc list-inside ml-6 space-y-1">
+                    <li>Current City: **2**. All cities visited. Return to **0**.</li>
+                    <li>Final Edge: Dist(2, 0) = 15.</li>
+                    <li>**Total Tour Cost:** 65 + 15 = **80**.</li>
+                    <li>**Greedy Tour:** $0 \to 1 \to 3 \to 2 \to 0$.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: Limitations and Sub-Optimality -->
+        <div id="slide-8" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">The Failure of Greedy: Sub-Optimality</h2>
+            <div class="slide-content text-xl max-w-5xl mx-auto text-gray-700">
+                <p class="mb-4">The Greedy tour $0 \to 1 \to 3 \to 2 \to 0$ cost us **80**.</p>
+                
+                <h3 class="text-2xl font-semibold text-red-600 mb-3">An Optimal Tour for this Graph:</h3>
+                <p class="mb-3">Consider the path $0 \to 2 \to 3 \to 1 \to 0$.</p>
+                
+                <div class="math-block text-base p-2">
+                    $$\text{Optimal Cost} = \text{Dist}(0, 2) + \text{Dist}(2, 3) + \text{Dist}(3, 1) + \text{Dist}(1, 0)$$
+                    $$\text{Optimal Cost} = 15 + 30 + 25 + 10 = \mathbf{80}$$
+                </div>
+                
+                <h3 class="text-2xl font-semibold text-blue-500 mt-4 mb-3">Wait, what happened? (A different graph example)</h3>
+                <p>The Nearest Neighbor approach sometimes *does* find the optimal path, but it is not guaranteed. Imagine if $\text{Dist}(1, 3)$ was 250 instead of 25. The initial greedy choice of $0 \to 1$ (10) would have *forced* a later expensive path, while $0 \to 2$ (15) could have opened up much cheaper paths overall.</p>
+                <p class="mt-4 font-bold text-red-700">The Greedy strategy often gets trapped by short initial edges, leading to costly final legs.</p>
+            </div>
+        </div>
+
+        <!-- Slide 10: Conclusion (Updated) -->
+        <div id="slide-9" class="slide absolute inset-0 opacity-0 pointer-events-none">
+            <h2 class="slide-title text-3xl md:text-4xl">Conclusion & Further Study</h2>
+            <div class="slide-content text-xl max-w-4xl mx-auto text-gray-700 text-center">
+                <p class="mb-6 font-semibold text-2xl">
+                    Greedy algorithms provide fast approximations for NP-Hard problems like TSP.
+                </p>
+
+                <h3 class="text-2xl font-semibold text-blue-500 mb-3">Key Takeaways:</h3>
+                <ul class="list-disc list-inside ml-6 text-left space-y-3 inline-block">
+                    <li>Greedy is $O(N^2)$ vs. $O(N!)$ for Brute Force. It is much faster for large $N$.</li>
+                    <li>The Nearest Neighbor method only makes locally optimal decisions.</li>
+                    <li>**Result:** The tour found is a **Heuristic Solution**, not guaranteed to be the shortest possible.</li>
+                </ul>
+
+                <p class="mt-8 text-lg font-bold text-gray-800">
+                    Questions? What if we start the Nearest Neighbor process at a different city?
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVIGATION CONTROLS -->
+    <div class="max-w-6xl mx-auto mt-6 flex justify-between">
+        <button id="prev-btn" class="px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+            &larr; Previous
+        </button>
+        <div class="px-4 py-3 bg-blue-100 text-blue-800 font-mono rounded-lg shadow-inner">
+            <span id="slide-number">1</span> / 10
+        </div>
+        <button id="next-btn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+            Next &rarr;
+        </button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        // Total slides changed from 11 to 10
+        const totalSlides = 10; 
+        const slideNumberElement = document.getElementById('slide-number');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('opacity-100', 'pointer-events-auto');
+                slide.classList.add('opacity-0', 'pointer-events-none');
+                // Only show slides up to the new totalSlides count
+                if (index < totalSlides && index === currentSlide) {
+                    slide.classList.add('opacity-100', 'pointer-events-auto');
+                    slide.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            });
+
+            slideNumberElement.textContent = currentSlide + 1;
+            // totalSlides is now used correctly
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Initialize slideshow on load
+        window.onload = function() {
+            updateSlide();
+            // Render all math using KaTeX
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                    ],
+                    throwOnError : false
+                });
+            }
+        };
+    </script>
+</body>
+</html>

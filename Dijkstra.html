@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra's Algorithm Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #10B981; /* Emerald 500 */
+            --color-secondary: #F59E0B; /* Amber 500 */
+            --color-background: #F9FAFB; /* Gray 50 */
+            --color-visited: #3B82F6; /* Blue 500 */
+            --color-current: #EF4444; /* Red 500 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+        }
+        /* Custom styles for SVG nodes and edges */
+        .node {
+            cursor: pointer;
+            transition: fill 0.3s, stroke 0.3s;
+        }
+        .node-label {
+            pointer-events: none;
+            font-weight: 700;
+        }
+        .edge-weight {
+            font-size: 14px;
+            font-weight: 600;
+            fill: #374151;
+            background-color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .current-node-pulse {
+            animation: pulse-ring 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden">
+        <header class="bg-gray-800 p-6 text-white">
+            <h1 class="text-3xl font-bold tracking-tight">Dijkstra's Algorithm Visualizer</h1>
+            <p class="mt-1 text-gray-300">Finding the shortest paths from node **A** to all other nodes.</p>
+        </header>
+
+        <!-- Introduction Section -->
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">What is Dijkstra's Algorithm?</h2>
+            <p class="text-gray-700 leading-relaxed">
+                Dijkstra's algorithm is a greedy method used to find the shortest paths from a single starting node to all other nodes in a weighted graph. It works by maintaining a set of visited nodes for which the shortest path is finalized, and continuously expanding outwards. At each step, it selects the **unvisited** node with the lowest current known distance from the start, a process called **relaxation**. This guarantees that when a node is visited, we have found the shortest possible route to it. This algorithm is only valid for graphs with non-negative edge weights. 
+            </p>
+        </div>
+        <!-- End Introduction Section -->
+
+        <div class="p-6 grid lg:grid-cols-3 gap-6">
+
+            <!-- Control and Status Panel -->
+            <div class="lg:col-span-1 space-y-4">
+                
+                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-inner">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-2">Algorithm Status</h2>
+                    <p class="text-sm font-medium text-gray-500 mb-3" id="step-counter">Step 0 / 0</p>
+                    <p id="status-message" class="text-gray-900 font-medium h-12 flex items-center"></p>
+                </div>
+                
+                <!-- Distances Table -->
+                <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-3">Shortest Distances (A &rarr; Node)</h2>
+                    <table class="w-full text-sm text-left text-gray-600">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 rounded-t-lg">
+                            <tr>
+                                <th scope="col" class="px-3 py-2 rounded-tl-lg">Node</th>
+                                <th scope="col" class="px-3 py-2">Distance</th>
+                                <th scope="col" class="px-3 py-2 rounded-tr-lg">Previous</th>
+                            </tr>
+                        </thead>
+                        <tbody id="distances-table">
+                            <!-- Rows inserted by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="prevStep()" id="prev-btn" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow-md disabled:bg-gray-400 transition">
+                        &larr; Previous Step
+                    </button>
+                    <button onclick="nextStep()" id="next-btn" class="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg shadow-md disabled:bg-gray-400 transition">
+                        Next Step &rarr;
+                    </button>
+                    <button onclick="resetVisualization()" class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg shadow-md transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Graph Visualization Area -->
+            <div class="lg:col-span-2 bg-gray-100 border border-gray-300 rounded-lg shadow-inner p-4 min-h-[400px]">
+                <svg id="graph-svg" class="w-full h-full" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Removed type="module" to allow inline onclick handlers to access these functions -->
+    <script>
+        // --- Firebase/API Placeholder Variables ---
+        // The core logic of this app (Dijkstra's) is purely front-end, so the database/auth
+        // variables are initialized but not used.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- Graph Definition ---
+        const graph = {
+            A: {B: 4, C: 2},
+            B: {E: 3, D: 2},
+            C: {B: 1, D: 5},
+            D: {E: 1},
+            E: {},
+        };
+        const START_NODE = 'A';
+        const NODES = Object.keys(graph);
+        
+        // --- Visualization Constants ---
+        const nodePositions = {
+            A: {x: 50, y: 200},
+            B: {x: 250, y: 100},
+            C: {x: 250, y: 300},
+            D: {x: 450, y: 300},
+            E: {x: 550, y: 200},
+        };
+        const NODE_RADIUS = 20;
+
+        // --- Algorithm State Management ---
+        let steps = [];
+        let currentStepIndex = 0;
+
+        /**
+         * The core implementation of Dijkstra's algorithm to pre-calculate every step
+         * for the slideshow.
+         * @returns {Array<Object>} An array of state objects, where each object
+         * represents the state of distances and visited nodes after a step.
+         */
+        function precalculateDijkstra(graph, startNode) {
+            const steps = [];
+            const distances = {};
+            const previous = {};
+            const unvisited = new Set(NODES);
+
+            // 1. Initialization
+            NODES.forEach(node => {
+                distances[node] = Infinity;
+                previous[node] = null;
+            });
+            distances[startNode] = 0;
+
+            // Store initial state
+            steps.push({
+                distances: {...distances},
+                previous: {...previous},
+                visited: new Set(),
+                currentNode: null,
+                message: `Start: Initialize distances. Distance[${startNode}] = 0, others = Infinity.`,
+                relaxedEdge: null // {from: 'A', to: 'B', newDist: 4}
+            });
+
+            let visited = new Set();
+            let stepCounter = 1;
+
+            // 2. Iteration
+            while (unvisited.size > 0) {
+                // Select the unvisited node with the smallest distance (The "next" current node)
+                let currentNode = null;
+                let minDistance = Infinity;
+                
+                unvisited.forEach(node => {
+                    if (distances[node] < minDistance) {
+                        minDistance = distances[node];
+                        currentNode = node;
+                    }
+                });
+
+                if (currentNode === null || minDistance === Infinity) {
+                    // All remaining nodes are unreachable
+                    break;
+                }
+
+                // Move current node from unvisited to visited
+                unvisited.delete(currentNode);
+                visited.add(currentNode);
+
+                // Step 1: Selection and Visiting
+                steps.push({
+                    distances: {...distances},
+                    previous: {...previous},
+                    visited: new Set(visited),
+                    currentNode: currentNode,
+                    message: `Step ${stepCounter}: Select node ${currentNode} (Distance: ${minDistance}). Mark as Visited.`,
+                    relaxedEdge: null
+                });
+                stepCounter++;
+
+                // Step 2: Relaxation (Check neighbors)
+                const neighbors = graph[currentNode];
+                let didRelax = false;
+
+                for (const neighbor in neighbors) {
+                    if (!visited.has(neighbor)) {
+                        const weight = neighbors[neighbor];
+                        const tentativeDistance = distances[currentNode] + weight;
+
+                        if (tentativeDistance < distances[neighbor]) {
+                            // Relaxation happens
+                            distances[neighbor] = tentativeDistance;
+                            previous[neighbor] = currentNode;
+                            didRelax = true;
+                            
+                            // Store state after relaxation
+                            steps.push({
+                                distances: {...distances},
+                                previous: {...previous},
+                                visited: new Set(visited),
+                                currentNode: currentNode,
+                                message: `Step ${stepCounter}: Relax edge ${currentNode} &rarr; ${neighbor}. New distance: ${tentativeDistance}. Previous node updated.`,
+                                relaxedEdge: {from: currentNode, to: neighbor, newDist: tentativeDistance}
+                            });
+                            stepCounter++;
+                        }
+                    }
+                }
+                
+                if (!didRelax && unvisited.size > 0) {
+                    // If no relaxation happened, but we still have nodes to process, just mark the selection step again
+                    // This handles cases where the current node's neighbors are all visited or unreachable.
+                    steps.push({
+                        distances: {...distances},
+                        previous: {...previous},
+                        visited: new Set(visited),
+                        currentNode: currentNode,
+                        message: `Step ${stepCounter}: Node ${currentNode} processed. No unvisited neighbors to relax.`,
+                        relaxedEdge: null
+                    });
+                    stepCounter++;
+                }
+
+            }
+
+            // Final state
+            steps.push({
+                distances: {...distances},
+                previous: {...previous},
+                visited: new Set(NODES),
+                currentNode: null,
+                message: `FINISHED. All nodes visited. The table shows the shortest distances from ${startNode}.`,
+                relaxedEdge: null
+            });
+            
+            return steps;
+        }
+
+        // --- Rendering Functions ---
+
+        /**
+         * Draws the graph (nodes, edges, weights) into the SVG container.
+         */
+        function drawGraphStructure() {
+            const svg = document.getElementById('graph-svg');
+            // Clear existing elements
+            svg.innerHTML = ''; 
+
+            // 1. Draw Edges (Links)
+            for (const source in graph) {
+                for (const target in graph[source]) {
+                    const weight = graph[source][target];
+                    const pos1 = nodePositions[source];
+                    const pos2 = nodePositions[target];
+
+                    // Draw Line (Edge)
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+                    line.setAttribute('x1', pos1.x);
+                    line.setAttribute('y1', pos1.y);
+                    line.setAttribute('x2', pos2.x);
+                    line.setAttribute('y2', pos2.y);
+                    line.setAttribute('stroke', '#6B7280'); // Gray 500
+                    line.setAttribute('stroke-width', 2);
+                    line.setAttribute('data-edge', `${source}-${target}`);
+                    svg.appendChild(line);
+
+                    // Draw Arrowhead (for directed graph)
+                    const angle = Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x);
+                    const dx = Math.cos(angle);
+                    const dy = Math.sin(angle);
+                    const arrowX = pos2.x - dx * NODE_RADIUS;
+                    const arrowY = pos2.y - dy * NODE_RADIUS;
+                    
+                    const marker = document.createElementNS("http://www.w3.org/2000/svg", 'polygon');
+                    marker.setAttribute('points', `${arrowX},${arrowY} ${arrowX - 8*dx - 4*dy},${arrowY - 8*dy + 4*dx} ${arrowX - 8*dx + 4*dy},${arrowY - 8*dy - 4*dx}`);
+                    marker.setAttribute('fill', '#6B7280');
+                    marker.setAttribute('data-arrow', `${source}-${target}`);
+                    svg.appendChild(marker);
+
+                    // Draw Weight Label (halfway point, slightly offset)
+                    const midX = (pos1.x + pos2.x) / 2 + 10 * dy;
+                    const midY = (pos1.y + pos2.y) / 2 - 10 * dx;
+
+                    const weightText = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+                    weightText.setAttribute('x', midX);
+                    weightText.setAttribute('y', midY);
+                    weightText.setAttribute('class', 'edge-weight');
+                    weightText.setAttribute('data-weight', `${source}-${target}`);
+                    weightText.textContent = weight;
+                    weightText.setAttribute('text-anchor', 'middle');
+                    svg.appendChild(weightText);
+                }
+            }
+
+            // 2. Draw Nodes
+            for (const node in nodePositions) {
+                const pos = nodePositions[node];
+
+                // Outer circle for pulse effect (current node) or highlight (visited path)
+                const outerCircle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                outerCircle.setAttribute('cx', pos.x);
+                outerCircle.setAttribute('cy', pos.y);
+                outerCircle.setAttribute('r', NODE_RADIUS * 1.3);
+                outerCircle.setAttribute('fill', 'transparent');
+                outerCircle.setAttribute('class', `node-outer node-outer-${node}`);
+                svg.appendChild(outerCircle);
+
+                // Main Node Circle
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                circle.setAttribute('cx', pos.x);
+                circle.setAttribute('cy', pos.y);
+                circle.setAttribute('r', NODE_RADIUS);
+                circle.setAttribute('fill', 'var(--color-primary)');
+                circle.setAttribute('stroke', '#374151');
+                circle.setAttribute('stroke-width', 2);
+                circle.setAttribute('class', `node node-${node}`);
+                svg.appendChild(circle);
+
+                // Node Label (A, B, C, etc.)
+                const label = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+                label.setAttribute('x', pos.x);
+                label.setAttribute('y', pos.y + 6);
+                label.textContent = node;
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('fill', 'white');
+                label.setAttribute('class', 'node-label');
+                svg.appendChild(label);
+            }
+        }
+
+        /**
+         * Updates the visualization and tables based on the current step's state.
+         * @param {Object} state - The current state object from the pre-calculated steps array.
+         */
+        function updateVisualization(state) {
+            const { distances, previous, visited, currentNode, message, relaxedEdge } = state;
+
+            // --- 1. Update Controls and Status ---
+            document.getElementById('step-counter').textContent = `Step ${currentStepIndex} / ${steps.length - 1}`;
+            document.getElementById('status-message').textContent = message;
+
+            const isFinished = currentStepIndex === steps.length - 1;
+            document.getElementById('prev-btn').disabled = currentStepIndex === 0;
+            document.getElementById('next-btn').disabled = isFinished;
+
+            // --- 2. Update Distances Table ---
+            const tableBody = document.getElementById('distances-table');
+            tableBody.innerHTML = '';
+
+            NODES.forEach(node => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-gray-50';
+                
+                const distanceStr = distances[node] === Infinity ? '∞' : distances[node];
+                const prevNode = previous[node] || '-';
+                
+                // Highlight the row if the distance was just updated or it's the current node
+                if (relaxedEdge && relaxedEdge.to === node) {
+                    tr.className += ' bg-yellow-100 font-bold';
+                } else if (node === currentNode) {
+                    tr.className += ' bg-red-50 text-red-700 font-bold';
+                } else if (visited.has(node) && !isFinished) {
+                    tr.className += ' bg-blue-50 text-blue-700';
+                }
+                
+                tr.innerHTML = `
+                    <th scope="row" class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">${node}</th>
+                    <td class="px-3 py-2">${distanceStr}</td>
+                    <td class="px-3 py-2">${prevNode}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // --- 3. Update Graph Visualization (SVG) ---
+            
+            // Reset all visual states
+            document.querySelectorAll('.node-outer').forEach(el => {
+                el.setAttribute('fill', 'transparent');
+                el.classList.remove('current-node-pulse');
+            });
+            document.querySelectorAll('.node').forEach(el => {
+                el.setAttribute('fill', 'var(--color-primary)');
+            });
+            document.querySelectorAll('line, [data-arrow]').forEach(el => {
+                el.setAttribute('stroke', '#6B7280');
+                el.setAttribute('fill', '#6B7280');
+                el.setAttribute('stroke-width', 2);
+            });
+            document.querySelectorAll('.edge-weight').forEach(el => {
+                el.setAttribute('fill', '#374151');
+            });
+            
+            // Apply current step highlights
+            NODES.forEach(node => {
+                const nodeEl = document.querySelector(`.node-${node}`);
+                const outerEl = document.querySelector(`.node-outer-${node}`);
+
+                if (nodeEl) {
+                    // Highlight Visited Nodes
+                    if (visited.has(node)) {
+                        nodeEl.setAttribute('fill', isFinished ? 'var(--color-secondary)' : 'var(--color-visited)');
+                        outerEl.setAttribute('fill', isFinished ? 'var(--color-secondary)' : 'var(--color-visited)');
+                        outerEl.setAttribute('opacity', isFinished ? 0.4 : 0.2);
+                    }
+
+                    // Highlight Current Node
+                    if (node === currentNode) {
+                        nodeEl.setAttribute('fill', 'var(--color-current)');
+                        outerEl.setAttribute('fill', 'var(--color-current)');
+                        outerEl.setAttribute('opacity', 0.2);
+                        outerEl.classList.add('current-node-pulse');
+                    }
+                }
+            });
+
+            // Highlight the recently relaxed edge
+            if (relaxedEdge) {
+                const {from, to} = relaxedEdge;
+                const edgeKey = `${from}-${to}`;
+                document.querySelector(`[data-edge="${edgeKey}"]`)?.setAttribute('stroke', 'var(--color-current)');
+                document.querySelector(`[data-arrow="${edgeKey}"]`)?.setAttribute('fill', 'var(--color-current)');
+                document.querySelector(`[data-weight="${edgeKey}"]`)?.setAttribute('fill', 'var(--color-current)');
+            }
+
+            // Highlight the final shortest path in the final step
+            if (isFinished) {
+                // Highlight final path to D (as an example final target)
+                // You can add logic to let the user select a target node, but D is used here for a fixed demo
+                let target = 'E';
+                let current = target;
+                while (previous[current] !== null) {
+                    const prev = previous[current];
+                    if (prev) {
+                        const edgeKey = `${prev}-${current}`;
+                        document.querySelector(`[data-edge="${edgeKey}"]`)?.setAttribute('stroke', 'var(--color-secondary)');
+                        document.querySelector(`[data-arrow="${edgeKey}"]`)?.setAttribute('fill', 'var(--color-secondary)');
+                        document.querySelector(`[data-weight="${edgeKey}"]`)?.setAttribute('fill', 'var(--color-secondary)');
+                        document.querySelector(`[data-weight="${edgeKey}"]`)?.setAttribute('fill', '#9A3412'); // Darker text for readability
+                    }
+                    // Highlight nodes on the path
+                    document.querySelector(`.node-${current}`)?.setAttribute('fill', 'var(--color-secondary)');
+                    current = prev;
+                }
+                // Highlight the start node A
+                document.querySelector(`.node-${START_NODE}`)?.setAttribute('fill', 'var(--color-secondary)');
+            }
+        }
+
+        // --- Control Functions ---
+
+        function nextStep() {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                updateVisualization(steps[currentStepIndex]);
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateVisualization(steps[currentStepIndex]);
+            }
+        }
+
+        function resetVisualization() {
+            currentStepIndex = 0;
+            updateVisualization(steps[currentStepIndex]);
+        }
+        
+        // --- Initialization ---
+
+        function init() {
+            drawGraphStructure();
+            steps = precalculateDijkstra(graph, START_NODE);
+            updateVisualization(steps[0]);
+        }
+        
+        // Ensure the app initializes after the window loads
+        window.onload = init;
+
+    </script>
+</body>
+</html>
