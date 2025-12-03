@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommender Systems: Calculations & Solutions</title>
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* CSS VARIABLES & RESET */
+        :root {
+            --bg-color: #0f172a;
+            --slide-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --accent: #38bdf8; /* Light Blue */
+            --accent-secondary: #818cf8; /* Indigo */
+            --success: #4ade80; /* Green for solutions */
+            --code-bg: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SLIDE CONTAINER */
+        .presentation-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 2rem 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out;
+            transform: scale(0.95);
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        /* TYPOGRAPHY */
+        h1 { font-size: 4rem; font-weight: 800; background: linear-gradient(to right, var(--accent), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; text-align: center; }
+        h2 { font-size: 2.5rem; margin-bottom: 1.5rem; color: #fff; border-bottom: 3px solid var(--accent); display: inline-block; }
+        h3 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; }
+        p, li { font-size: 1.1rem; line-height: 1.5; color: #cbd5e1; }
+        
+        /* CALCULATION STYLES */
+        .calc-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .calc-step {
+            margin-bottom: 1rem;
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .solution-box {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .matrix-table {
+            border-collapse: collapse;
+            font-family: 'Fira Code', monospace;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .matrix-table th, .matrix-table td {
+            border: 1px solid #475569;
+            padding: 8px;
+            text-align: center;
+        }
+        .matrix-table th { background: #334155; color: var(--accent); }
+        .matrix-table .highlight { background: rgba(56, 189, 248, 0.2); }
+        .matrix-table .target { background: rgba(248, 113, 113, 0.2); border: 2px solid #ef4444; }
+
+        .math-block {
+            font-family: 'Fira Code', monospace;
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            color: #fbbf24; /* Amber */
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        /* NAVIGATION CONTROLS */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: var(--accent); color: #000; }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .formula-img {
+            filter: invert(1);
+            max-height: 50px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation-container">
+
+        <!-- SLIDE 1: TITLE -->
+        <div class="slide active">
+            <i class="fa-solid fa-calculator" style="font-size: 5rem; color: var(--accent); margin-bottom: 20px;"></i>
+            <h1>Recommender Systems</h1>
+            <h2>Calculations & Solutions</h2>
+            <p>A mathematical walkthrough of Content-Based, User-Based, and Item-Based Filtering.</p>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #64748b;">Click Next or use Arrow Keys</p>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- CONTENT BASED FILTERING -->
+        <!-- ============================================= -->
+
+        <div class="slide">
+            <h2>1. Content-Based Filtering</h2>
+            <div class="calc-container">
+                <div>
+                    <h3>The Scenario</h3>
+                    <p>We want to know if we should recommend the movie <strong>"Inception"</strong> to <strong>User A</strong>.</p>
+                    <br>
+                    <p><strong>User A Profile:</strong> Likes Action and Sci-Fi.</p>
+                    <p><strong>Item (Inception):</strong> Genres are Action and Sci-Fi.</p>
+                    <p><strong>Item (Notebook):</strong> Genre is Romance.</p>
+                </div>
+                <div>
+                    <h3>The Data Vectors</h3>
+                    <p>We convert genres into binary vectors [Action, Sci-Fi, Romance].</p>
+                    <br>
+                    <table class="matrix-table">
+                        <tr><th>Entity</th><th>Action</th><th>Sci-Fi</th><th>Romance</th><th>Vector</th></tr>
+                        <tr class="highlight"><td>User A Profile</td><td>1</td><td>1</td><td>0</td><td>A = [1, 1, 0]</td></tr>
+                        <tr><td>Movie: Inception</td><td>1</td><td>1</td><td>0</td><td>B = [1, 1, 0]</td></tr>
+                        <tr><td>Movie: Notebook</td><td>0</td><td>0</td><td>1</td><td>C = [0, 0, 1]</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Content-Based: The Calculation</h2>
+            <p style="margin-bottom: 20px;">We use <strong>Cosine Similarity</strong> to measure the angle between the User Vector and the Item Vector.</p>
+            
+            <div class="calc-container">
+                <div style="font-size: 0.9rem;">
+                    <h3>Formula</h3>
+                    <div class="math-block">
+                        Sim(A, B) = (A . B) / (||A|| * ||B||)
+                    </div>
+                    <br><br>
+                    <h4>Step 1: Dot Product (A . B)</h4>
+                    <p>(1*1) + (1*1) + (0*0) = <strong>2</strong></p>
+                    <br>
+                    <h4>Step 2: Magnitude (||A||)</h4>
+                    <p>√(1² + 1² + 0²) = √2 = <strong>1.414</strong></p>
+                </div>
+                <div>
+                    <h3>Solution</h3>
+                    
+                    <div class="calc-step">
+                        <strong>Target: Inception [1, 1, 0]</strong><br>
+                        Numerator: 2<br>
+                        Denominator: 1.414 * 1.414 = 2<br>
+                        Similarity = 2 / 2 = <strong>1.0 (Perfect Match)</strong>
+                    </div>
+
+                    <div class="calc-step">
+                        <strong>Target: Notebook [0, 0, 1]</strong><br>
+                        Dot Product: (1*0) + (1*0) + (0*1) = 0<br>
+                        Similarity = 0 / 2 = <strong>0.0 (No Match)</strong>
+                    </div>
+
+                    <div class="solution-box">
+                        <i class="fa-solid fa-check-circle"></i> Result: System recommends Inception.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- USER BASED COLLABORATIVE FILTERING -->
+        <!-- ============================================= -->
+
+        <div class="slide">
+            <h2>2. User-Based Collaborative Filtering</h2>
+            <div class="calc-container">
+                <div>
+                    <h3>The Scenario</h3>
+                    <p><strong>Goal:</strong> Predict the rating <strong>User A</strong> would give to <strong>Item 3</strong>.</p>
+                    <p>We look for other users (neighbors) who are similar to User A.</p>
+                </div>
+                <div>
+                    <h3>User-Item Matrix</h3>
+                    <table class="matrix-table">
+                        <tr><th>User</th><th>Item 1</th><th>Item 2</th><th>Item 3 (Target)</th><th>Item 4</th></tr>
+                        <tr class="highlight"><td>User A</td><td>4</td><td>5</td><td class="target">?</td><td>2</td></tr>
+                        <tr><td>User B</td><td>4</td><td>5</td><td><strong>5</strong></td><td>1</td></tr>
+                        <tr><td>User C</td><td>1</td><td>1</td><td><strong>2</strong></td><td>5</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>User-Based: The Calculation</h2>
+            <div class="calc-container">
+                <div>
+                    <h3>Step 1: Similarity</h3>
+                    <p>Calculate Cosine Similarity between User A and others based on common items (Item 1, 2, 4).</p>
+                    <br>
+                    <div class="math-block">A = [4, 5, 2]</div><br>
+                    <div class="math-block">B = [4, 5, 1]</div><br>
+                    <div class="math-block">C = [1, 1, 5]</div>
+                    <br><br>
+                    <p><strong>Sim(A, B):</strong> High (Similar ratings)</p>
+                    <p><strong>Sim(A, C):</strong> Low (Opposite ratings)</p>
+                    <p><em>(Let's assume Sim(A,B) = 0.9 and Sim(A,C) = 0.1 for simplicity)</em></p>
+                </div>
+                <div>
+                    <h3>Step 2: Weighted Prediction</h3>
+                    <p>Formula: Σ(Similarity * Rating) / Σ(Similarity)</p>
+                    
+                    <div class="calc-step">
+                        <strong>User B's influence:</strong><br>
+                        Sim(0.9) * Rating(5) = <strong>4.5</strong>
+                    </div>
+                    
+                    <div class="calc-step">
+                        <strong>User C's influence:</strong><br>
+                        Sim(0.1) * Rating(2) = <strong>0.2</strong>
+                    </div>
+
+                    <div class="calc-step">
+                        <strong>Total:</strong> (4.5 + 0.2) / (0.9 + 0.1)<br>
+                        = 4.7 / 1.0 = <strong>4.7</strong>
+                    </div>
+
+                    <div class="solution-box">
+                        <i class="fa-solid fa-check-circle"></i> Prediction: User A will rate Item 3: <strong>4.7 Stars</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================= -->
+        <!-- ITEM BASED COLLABORATIVE FILTERING -->
+        <!-- ============================================= -->
+
+        <div class="slide">
+            <h2>3. Item-Based Collaborative Filtering</h2>
+            <div class="calc-container">
+                <div>
+                    <h3>The Scenario</h3>
+                    <p><strong>Goal:</strong> Predict rating for <strong>User A</strong> on <strong>Pizza</strong>.</p>
+                    <p>Instead of looking at users, we look at how similar <strong>Pizza</strong> is to items User A has already rated (e.g., <strong>Burger</strong>).</p>
+                    <p>User A rated Burger: <strong>5 Stars</strong>.</p>
+                </div>
+                <div>
+                    <h3>Item-Item Matrix (Column Vectors)</h3>
+                    <table class="matrix-table">
+                        <tr><th>User</th><th>Burger</th><th>Pizza (Target)</th><th>Salad</th></tr>
+                        <tr><td>User X</td><td>5</td><td>5</td><td>1</td></tr>
+                        <tr><td>User Y</td><td>4</td><td>5</td><td>2</td></tr>
+                        <tr><td>User Z</td><td>1</td><td>1</td><td>5</td></tr>
+                    </table>
+                    <p><em>Notice: Burger and Pizza have very similar columns. Salad is different.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <h2>Item-Based: The Calculation</h2>
+            <div class="calc-container">
+                <div>
+                    <h3>Step 1: Item Similarity</h3>
+                    <p>We treat the Items as vectors (columns from previous slide).</p>
+                    <br>
+                    <div class="math-block">Burger Vector = [5, 4, 1]</div>
+                    <div class="math-block">Pizza Vector  = [5, 5, 1]</div>
+                    <br><br>
+                    <p><strong>Dot Product:</strong> (25 + 20 + 1) = 46</p>
+                    <p><strong>Magnitudes:</strong> ||B||=6.48, ||P||=7.14</p>
+                    <p><strong>Similarity:</strong> 46 / (6.48 * 7.14) ≈ <strong>0.99</strong></p>
+                </div>
+                <div>
+                    <h3>Step 2: Prediction</h3>
+                    <p>Since Pizza is 99% similar to Burger, and User A rated Burger 5 stars:</p>
+
+                    <div class="calc-step">
+                        Prediction = Sim(Burger, Pizza) * UserA_Rating(Burger)
+                    </div>
+
+                    <div class="calc-step">
+                        Calculation = 0.99 * 5 = <strong>4.95</strong>
+                    </div>
+
+                    <div class="solution-box">
+                        <i class="fa-solid fa-check-circle"></i> Solution: We recommend Pizza to User A (Predicted 4.95 Stars).
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONCLUSION -->
+        <div class="slide">
+            <h2>Summary of Math</h2>
+            <table class="matrix-table" style="font-size: 1.2rem;">
+                <tr>
+                    <th>Method</th>
+                    <th>Vector Used</th>
+                    <th>Core Logic</th>
+                </tr>
+                <tr>
+                    <td><strong>Content-Based</strong></td>
+                    <td>Item Attributes [0, 1, 1...]</td>
+                    <td>Measures overlap of tags/genres.</td>
+                </tr>
+                <tr>
+                    <td><strong>User-Based</strong></td>
+                    <td>User Rows [5, 3, ?, 1]</td>
+                    <td>Weighted average of neighbor ratings.</td>
+                </tr>
+                <tr>
+                    <td><strong>Item-Based</strong></td>
+                    <td>Item Columns [5, 4, 1]</td>
+                    <td>Recommends items similar to what you liked before.</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- NAVIGATION CONTROLS -->
+    <div class="controls">
+        <button class="btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+        <button class="btn" onclick="nextSlide()">Next <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
