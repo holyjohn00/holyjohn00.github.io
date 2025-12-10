@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Excel Pivot Tables & Charts – Any Dataset</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light;
+    }
+
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .deck {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .slide {
+      display: none;
+      background: radial-gradient(circle at top left, #1e293b, #020617);
+      border-radius: 18px;
+      padding: 1.6rem 2rem 2.1rem;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.6);
+      min-height: 70vh;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+      color: #e0e7ff;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    h2 {
+      font-size: 1.7rem;
+      margin-bottom: 0.7rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      color: #c7d2fe;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    p, li {
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    ul, ol {
+      margin-top: 0.3rem;
+      padding-left: 1.2rem;
+    }
+
+    li {
+      margin-bottom: 0.2rem;
+    }
+
+    .tagline {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #1d4ed8;
+      color: #e5e7eb;
+      padding: 0.12rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #111827;
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.78rem;
+      margin-right: 0.25rem;
+      margin-top: 0.15rem;
+      border: 1px solid #374151;
+    }
+
+    .box {
+      border-left: 4px solid #22c55e;
+      background: rgba(22, 163, 74, 0.12);
+      padding: 0.65rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-top: 0.8rem;
+    }
+
+    .box-note {
+      border-left: 4px solid #3b82f6;
+      background: rgba(37, 99, 235, 0.12);
+    }
+
+    .box-warn {
+      border-left: 4px solid #f97316;
+      background: rgba(249, 115, 22, 0.1);
+    }
+
+    code {
+      background: #020617;
+      border-radius: 4px;
+      padding: 0.08rem 0.35rem;
+      font-size: 0.85rem;
+      border: 1px solid #1f2937;
+    }
+
+    .footer-bar {
+      margin-top: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      opacity: 0.85;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    button:hover:not(:disabled) {
+      background: #111827;
+    }
+
+    .slide-num {
+      font-weight: 500;
+    }
+
+    .kbd {
+      border-radius: 5px;
+      border: 1px solid #4b5563;
+      padding: 0.05rem 0.35rem;
+      font-size: 0.78rem;
+      background: #020617;
+      margin: 0 0.1rem;
+    }
+
+    .layout-two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+      gap: 1.3rem;
+      margin-top: 0.6rem;
+      align-items: flex-start;
+    }
+
+    .muted {
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    .big-number {
+      font-size: 3.2rem;
+      font-weight: 700;
+      color: #4ade80;
+      margin-bottom: 0.2rem;
+    }
+
+    .image-frame {
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      padding: 0.6rem;
+    }
+
+    .image-caption {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-top: 0.35rem;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (max-width: 800px) {
+      .slide {
+        padding: 1.1rem 1.25rem 1.4rem;
+        border-radius: 0;
+        min-height: 0;
+      }
+      .layout-two-col {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      h2 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <!-- Slide 1 -->
+    <section class="slide active">
+      <h1>Excel Pivot Tables & Charts</h1>
+      <p class="tagline">
+        Build a simple dashboard using <strong>your own dataset</strong> (grades, sales, survey, etc.).
+      </p>
+      <div class="layout-two-col" style="margin-top:1.2rem;">
+        <div>
+          <h3>What you’ll learn</h3>
+          <ul>
+            <li>What PivotTables and PivotCharts are.</li>
+            <li>How to summarize your data without formulas.</li>
+            <li>How to add slicers (big filter buttons).</li>
+            <li>How to arrange everything into a dashboard.</li>
+          </ul>
+          <div class="box">
+            <strong>Important:</strong> You can use <em>any</em> dataset that looks like a table:
+            one row per record, one header per column.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- Simple “dashboard” illustration -->
+            <svg viewBox="0 0 260 170" aria-label="Example dashboard layout">
+              <title>Dashboard layout with charts and slicers</title>
+              <rect x="0" y="0" width="260" height="170" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- slicers -->
+              <rect x="10" y="10" width="90" height="22" rx="4" fill="#111827" stroke="#374151"/>
+              <rect x="105" y="10" width="70" height="22" rx="4" fill="#111827" stroke="#374151"/>
+              <rect x="180" y="10" width="70" height="22" rx="4" fill="#111827" stroke="#374151"/>
+              <!-- chart 1 -->
+              <rect x="10" y="40" width="115" height="55" rx="4" fill="#020617" stroke="#374151"/>
+              <rect x="17" y="83" width="10" height="10" fill="#2563eb"/>
+              <rect x="32" y="75" width="10" height="18" fill="#2563eb"/>
+              <rect x="47" y="65" width="10" height="28" fill="#2563eb"/>
+              <rect x="62" y="55" width="10" height="38" fill="#2563eb"/>
+              <!-- chart 2 -->
+              <rect x="135" y="40" width="115" height="55" rx="4" fill="#020617" stroke="#374151"/>
+              <rect x="142" y="80" width="10" height="12" fill="#22c55e"/>
+              <rect x="157" y="70" width="10" height="22" fill="#22c55e"/>
+              <rect x="172" y="60" width="10" height="32" fill="#22c55e"/>
+              <rect x="187" y="50" width="10" height="42" fill="#22c55e"/>
+              <!-- table -->
+              <rect x="10" y="100" width="240" height="60" rx="4" fill="#020617" stroke="#374151"/>
+              <rect x="12" y="102" width="236" height="12" fill="#111827"/>
+              <!-- rows -->
+              <rect x="12" y="116" width="236" height="10" fill="#020617" stroke="#111827" stroke-width="0.3"/>
+              <rect x="12" y="128" width="236" height="10" fill="#020617" stroke="#111827" stroke-width="0.3"/>
+              <rect x="12" y="140" width="236" height="10" fill="#020617" stroke="#111827" stroke-width="0.3"/>
+            </svg>
+            <div class="image-caption">Example: dashboard with slicers on top and charts in the middle.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 1 / 11</span>
+        <div class="controls">
+          <span class="muted">Use <span class="kbd">←</span><span class="kbd">→</span> or click Next</span>
+          <button id="prevBtn" disabled>◀ Prev</button>
+          <button id="nextBtn">Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 2: Dataset -->
+    <section class="slide">
+      <h2>1. Your Dataset</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>You can use any table-like data. For example:</p>
+          <ul>
+            <li>Student grades</li>
+            <li>Sales transactions</li>
+            <li>Survey responses</li>
+          </ul>
+          <p>Typical columns:</p>
+          <ul>
+            <li><strong>Date</strong> (when something happened)</li>
+            <li><strong>Category</strong> (subject, product, question type…)</li>
+            <li><strong>Amount / Score</strong> (numeric value to summarize)</li>
+            <li><strong>Region / Group</strong> (class, campus, store, team…)</li>
+          </ul>
+          <div class="box-note">
+            Make sure the first row has <strong>column names</strong> and there are no completely blank rows in the middle.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- dataset table illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Example dataset table">
+              <title>Example dataset table</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- header -->
+              <rect x="10" y="15" width="240" height="18" rx="3" fill="#111827"/>
+              <!-- header columns -->
+              <line x1="70" y1="15" x2="70" y2="33" stroke="#1f2937" stroke-width="0.8"/>
+              <line x1="135" y1="15" x2="135" y2="33" stroke="#1f2937" stroke-width="0.8"/>
+              <line x1="190" y1="15" x2="190" y2="33" stroke="#1f2937" stroke-width="0.8"/>
+              <!-- rows -->
+              <rect x="10" y="37" width="240" height="16" fill="#020617" stroke="#111827" stroke-width="0.6"/>
+              <rect x="10" y="55" width="240" height="16" fill="#020617" stroke="#111827" stroke-width="0.6"/>
+              <rect x="10" y="73" width="240" height="16" fill="#020617" stroke="#111827" stroke-width="0.6"/>
+              <rect x="10" y="91" width="240" height="16" fill="#020617" stroke="#111827" stroke-width="0.6"/>
+              <rect x="10" y="109" width="240" height="16" fill="#020617" stroke="#111827" stroke-width="0.6"/>
+              <!-- tiny header labels -->
+              <text x="20" y="28" font-size="7" fill="#e5e7eb">Date</text>
+              <text x="80" y="28" font-size="7" fill="#e5e7eb">Category</text>
+              <text x="140" y="28" font-size="7" fill="#e5e7eb">Region</text>
+              <text x="200" y="28" font-size="7" fill="#e5e7eb">Amount</text>
+            </svg>
+            <div class="image-caption">
+              Example: each row is one record (sale, grade, response), each column is a field.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 2 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Table -->
+    <section class="slide">
+      <h2>2. Step 1 – Turn Data into an Excel Table</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>This makes the data easier to work with and keeps PivotTables connected.</p>
+          <ol>
+            <li>Click any cell inside your dataset.</li>
+            <li>On the ribbon, click <span class="pill">Insert</span> → <span class="pill">Table</span>.</li>
+            <li>Make sure <strong>“My table has headers”</strong> is checked.</li>
+            <li>Click <strong>OK</strong>.</li>
+            <li>With the table selected, go to <span class="pill">Table Design</span> and give it a name (e.g., <code>MyData</code>).</li>
+          </ol>
+          <div class="box">
+            <strong>Why?</strong> Tables automatically extend as you add rows, and PivotTables can refresh from them.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- Insert Table illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Insert Table on ribbon">
+              <title>Insert table from ribbon</title>
+              <!-- ribbon -->
+              <rect x="0" y="0" width="260" height="50" fill="#111827" />
+              <text x="15" y="20" font-size="9" fill="#e5e7eb">Home</text>
+              <text x="55" y="20" font-size="9" fill="#9ca3af">Insert</text>
+              <text x="105" y="20" font-size="9" fill="#9ca3af">Page Layout</text>
+              <!-- highlight Insert -->
+              <rect x="48" y="22" width="40" height="3" fill="#2563eb"/>
+              <!-- Table button area -->
+              <rect x="10" y="55" width="80" height="30" rx="4" fill="#020617" stroke="#374151"/>
+              <rect x="15" y="60" width="24" height="18" fill="#1f2937" stroke="#4b5563" stroke-width="0.5"/>
+              <text x="45" y="74" font-size="8" fill="#e5e7eb">Table</text>
+              <!-- dataset preview below -->
+              <rect x="110" y="55" width="140" height="75" rx="5" fill="#020617" stroke="#374151"/>
+              <rect x="112" y="57" width="136" height="12" fill="#111827"/>
+              <rect x="112" y="71" width="136" height="11" fill="#020617" stroke="#111827" stroke-width="0.4"/>
+              <rect x="112" y="84" width="136" height="11" fill="#020617" stroke="#111827" stroke-width="0.4"/>
+            </svg>
+            <div class="image-caption">Click inside your data → Insert → Table → confirm “My table has headers”.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 3 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: PivotTable create -->
+    <section class="slide">
+      <h2>3. Step 2 – Create Your First PivotTable</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>We’ll answer a question like:</p>
+          <p><strong>“What is the total or average Amount per Category?”</strong></p>
+          <ol>
+            <li>Click anywhere inside your table (e.g., <code>MyData</code>).</li>
+            <li>Click <span class="pill">Insert</span> → <span class="pill">PivotTable</span>.</li>
+            <li>Make sure the Table/Range shows your table name (<code>MyData</code>).</li>
+            <li>Choose <strong>New Worksheet</strong>.</li>
+            <li>Click <strong>OK</strong>.</li>
+          </ol>
+          <div class="box-note">
+            You will see an empty PivotTable area and the <strong>PivotTable Fields</strong> list on the right.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- PivotTable dialog illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Create PivotTable dialog">
+              <title>Create PivotTable dialog</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <rect x="10" y="15" width="240" height="15" fill="#111827"/>
+              <text x="15" y="26" font-size="8" fill="#e5e7eb">Create PivotTable</text>
+              <!-- body -->
+              <rect x="10" y="35" width="240" height="80" fill="#020617"/>
+              <text x="15" y="50" font-size="7" fill="#e5e7eb">Select a table or range:</text>
+              <rect x="15" y="54" width="180" height="13" rx="2" fill="#020617" stroke="#374151"/>
+              <text x="20" y="63" font-size="7" fill="#9ca3af">MyData</text>
+              <text x="15" y="80" font-size="7" fill="#e5e7eb">Choose where you want the PivotTable report to be placed:</text>
+              <rect x="20" y="88" width="6" height="6" fill="none" stroke="#e5e7eb" stroke-width="0.7"/>
+              <rect x="21" y="89" width="4" height="4" fill="#22c55e"/>
+              <text x="30" y="93" font-size="7" fill="#e5e7eb">New Worksheet</text>
+              <rect x="20" y="100" width="6" height="6" fill="none" stroke="#9ca3af" stroke-width="0.7"/>
+              <text x="30" y="105" font-size="7" fill="#9ca3af">Existing Worksheet</text>
+              <!-- buttons -->
+              <rect x="170" y="120" width="35" height="12" rx="3" fill="#2563eb"/>
+              <text x="181" y="129" font-size="7" fill="#e5e7eb">OK</text>
+              <rect x="210" y="120" width="35" height="12" rx="3" fill="#111827"/>
+              <text x="218" y="129" font-size="7" fill="#e5e7eb">Cancel</text>
+            </svg>
+            <div class="image-caption">Create PivotTable: source is your table, location is a new worksheet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 4 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Drag fields -->
+    <section class="slide">
+      <h2>4. Step 3 – Drag Fields into the PivotTable</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>We’ll build a summary like:</p>
+          <p><strong>“Total/average Amount for each Category”</strong></p>
+          <p>Drag fields in the PivotTable Fields pane:</p>
+          <p>
+            <span class="tag">Category → Rows</span>
+            <span class="tag">Amount → Values</span>
+          </p>
+          <ol>
+            <li>Drag your <strong>Category</strong> field (e.g., Subject, Product) to <strong>Rows</strong>.</li>
+            <li>Drag your numeric field (e.g., Amount, Score) to <strong>Values</strong>.</li>
+          </ol>
+          <p>To change from Sum to Average:</p>
+          <ol start="3">
+            <li>Click the small arrow on <em>Sum of Amount</em> (or similar) in the Values box.</li>
+            <li>Choose <strong>Value Field Settings…</strong>.</li>
+            <li>Select <strong>Average</strong> → <strong>OK</strong>.</li>
+          </ol>
+          <div class="box">
+            Now your PivotTable answers:
+            <em>“For each Category, what is the total/average Amount?”</em>
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- PivotTable layout illustration -->
+            <svg viewBox="0 0 260 150" aria-label="PivotTable layout and fields">
+              <title>PivotTable layout and fields</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- pivot area -->
+              <rect x="10" y="15" width="140" height="120" rx="5" fill="#020617" stroke="#374151"/>
+              <rect x="12" y="17" width="136" height="14" fill="#111827"/>
+              <text x="16" y="27" font-size="7" fill="#e5e7eb">Category</text>
+              <!-- sample rows -->
+              <text x="16" y="43" font-size="7" fill="#e5e7eb">Category A</text>
+              <text x="16" y="56" font-size="7" fill="#e5e7eb">Category B</text>
+              <text x="16" y="69" font-size="7" fill="#e5e7eb">Category C</text>
+              <text x="90" y="43" font-size="7" fill="#e5e7eb">123.4</text>
+              <text x="90" y="56" font-size="7" fill="#e5e7eb">98.7</text>
+              <text x="90" y="69" font-size="7" fill="#e5e7eb">75.2</text>
+              <!-- fields pane -->
+              <rect x="160" y="15" width="90" height="120" rx="5" fill="#020617" stroke="#374151"/>
+              <text x="165" y="25" font-size="7" fill="#e5e7eb">PivotTable Fields</text>
+              <!-- fields list -->
+              <rect x="165" y="32" width="80" height="40" rx="3" fill="#020617" stroke="#374151"/>
+              <text x="168" y="42" font-size="7" fill="#e5e7eb">☑ Date</text>
+              <text x="168" y="52" font-size="7" fill="#e5e7eb">☑ Category</text>
+              <text x="168" y="62" font-size="7" fill="#e5e7eb">☑ Region</text>
+              <text x="168" y="72" font-size="7" fill="#e5e7eb">☑ Amount</text>
+              <!-- drop zones -->
+              <rect x="165" y="76" width="80" height="11" rx="2" fill="#020617" stroke="#374151"/>
+              <text x="168" y="84" font-size="6" fill="#9ca3af">Filters</text>
+              <rect x="165" y="89" width="80" height="11" rx="2" fill="#020617" stroke="#374151"/>
+              <text x="168" y="97" font-size="6" fill="#9ca3af">Columns</text>
+              <rect x="165" y="102" width="80" height="11" rx="2" fill="#020617" stroke="#374151"/>
+              <text x="168" y="110" font-size="6" fill="#9ca3af">Rows: Category</text>
+              <rect x="165" y="115" width="80" height="11" rx="2" fill="#020617" stroke="#374151"/>
+              <text x="168" y="123" font-size="6" fill="#9ca3af">Values: Sum of Amount</text>
+            </svg>
+            <div class="image-caption">Example PivotTable: Category in Rows, Amount in Values.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 5 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: PivotChart -->
+    <section class="slide">
+      <h2>5. Step 4 – Turn the PivotTable into a Chart</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>A chart makes the summary easier to read at a glance.</p>
+          <ol>
+            <li>Click inside the PivotTable.</li>
+            <li>Go to <span class="pill">Insert</span> → choose a <strong>Column</strong> or <strong>Bar</strong> chart.</li>
+            <li>Pick a simple style like <em>Clustered Column</em>.</li>
+          </ol>
+          <p>The chart should show:</p>
+          <ul>
+            <li>x-axis: <strong>Category</strong></li>
+            <li>y-axis: <strong>Total/Average Amount</strong></li>
+          </ul>
+          <div class="box-note">
+            <strong>Rename the chart:</strong> Click the title and type something like
+            <em>“Amount by Category”</em>.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- Column chart illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Column chart from PivotTable">
+              <title>Column chart created from PivotTable</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- chart area -->
+              <rect x="20" y="20" width="220" height="90" rx="5" fill="#020617" stroke="#374151"/>
+              <!-- columns -->
+              <rect x="40" y="70" width="20" height="30" fill="#2563eb"/>
+              <rect x="90" y="55" width="20" height="45" fill="#2563eb"/>
+              <rect x="140" y="40" width="20" height="60" fill="#2563eb"/>
+              <rect x="190" y="60" width="20" height="40" fill="#2563eb"/>
+              <!-- axes -->
+              <line x1="30" y1="35" x2="30" y2="105" stroke="#4b5563" stroke-width="0.8"/>
+              <line x1="30" y1="105" x2="225" y2="105" stroke="#4b5563" stroke-width="0.8"/>
+              <!-- labels -->
+              <text x="37" y="118" font-size="7" fill="#e5e7eb">A</text>
+              <text x="87" y="118" font-size="7" fill="#e5e7eb">B</text>
+              <text x="137" y="118" font-size="7" fill="#e5e7eb">C</text>
+              <text x="187" y="118" font-size="7" fill="#e5e7eb">D</text>
+              <!-- title -->
+              <text x="30" y="16" font-size="8" fill="#e5e7eb">Amount by Category</text>
+            </svg>
+            <div class="image-caption">Example PivotChart based on the PivotTable summary.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 6 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: Second pivot -->
+    <section class="slide">
+      <h2>6. Step 5 – Create a Second PivotTable</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>Dashboards usually have more than one view. Example:</p>
+          <p><strong>“Amount per Region”</strong> or <strong>“Average Score per Group”</strong></p>
+          <ol>
+            <li>Go back to the sheet with your table (<code>MyData</code>).</li>
+            <li>Insert another PivotTable:
+              <ul>
+                <li>Click inside the table.</li>
+                <li><span class="pill">Insert</span> → <span class="pill">PivotTable</span>.</li>
+                <li>Use the same source table.</li>
+              </ul>
+            </li>
+            <li>In the new PivotTable, drag:
+              <ul>
+                <li><strong>Region / Group</strong> → <strong>Rows</strong></li>
+                <li><strong>Amount / Score</strong> → <strong>Values</strong> (Sum or Average)</li>
+              </ul>
+            </li>
+            <li>Add another PivotChart from this PivotTable and rename it (e.g., <em>Amount by Region</em>).</li>
+          </ol>
+          <div class="box">
+            Now you have:
+            <ul>
+              <li>Chart 1 – by Category</li>
+              <li>Chart 2 – by Region (or Group)</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- Two charts illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Two charts from different PivotTables">
+              <title>Two PivotCharts: Category and Region</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- chart 1 -->
+              <rect x="10" y="15" width="115" height="55" rx="4" fill="#020617" stroke="#374151"/>
+              <text x="14" y="25" font-size="7" fill="#e5e7eb">By Category</text>
+              <rect x="20" y="50" width="10" height="15" fill="#2563eb"/>
+              <rect x="35" y="40" width="10" height="25" fill="#2563eb"/>
+              <rect x="50" y="30" width="10" height="35" fill="#2563eb"/>
+              <!-- chart 2 -->
+              <rect x="135" y="15" width="115" height="55" rx="4" fill="#020617" stroke="#374151"/>
+              <text x="139" y="25" font-size="7" fill="#e5e7eb">By Region</text>
+              <rect x="145" y="45" width="8" height="20" fill="#22c55e"/>
+              <rect x="160" y="40" width="8" height="25" fill="#22c55e"/>
+              <rect x="175" y="50" width="8" height="15" fill="#22c55e"/>
+              <!-- note -->
+              <text x="20" y="100" font-size="7" fill="#9ca3af">
+                Both charts are driven by PivotTables based on the same source data.
+              </text>
+            </svg>
+            <div class="image-caption">Example: two PivotCharts from different PivotTables.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 7 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: Slicers -->
+    <section class="slide">
+      <h2>7. Step 6 – Add Slicers (Friendly Filters)</h2>
+      <div class="layout-two-col">
+        <div>
+          <p><strong>Slicers</strong> are big buttons that filter PivotTables and charts.</p>
+          <h3>Example slicers you can use</h3>
+          <ul>
+            <li><strong>Date</strong> (Year, Month)</li>
+            <li><strong>Category</strong> (Subject, Product type)</li>
+            <li><strong>Region / Group</strong> (Campus, Class, Store)</li>
+          </ul>
+          <h3>How to add a slicer</h3>
+          <ol>
+            <li>Click on a PivotTable.</li>
+            <li>Go to <span class="pill">PivotTable Analyze</span> → <span class="pill">Insert Slicer</span>.</li>
+            <li>Check the field you want (e.g., <strong>Date</strong> or <strong>Category</strong>).</li>
+            <li>Click <strong>OK</strong>.</li>
+          </ol>
+          <div class="box-note">
+            Try clicking different buttons in the slicer. Watch how the PivotTable and chart change.
+          </div>
+          <div class="box-warn">
+            Right now, each slicer may only control <em>one</em> PivotTable. We’ll link them soon.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- slicers illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Slicers for Category and Date">
+              <title>Slicers connected to a chart</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- slicer 1 -->
+              <rect x="10" y="10" width="80" height="60" rx="5" fill="#020617" stroke="#374151"/>
+              <text x="15" y="20" font-size="7" fill="#e5e7eb">Category</text>
+              <rect x="15" y="25" width="68" height="12" rx="3" fill="#111827" stroke="#4b5563"/>
+              <rect x="15" y="40" width="68" height="12" rx="3" fill="#111827" stroke="#4b5563"/>
+              <rect x="15" y="55" width="68" height="12" rx="3" fill="#111827" stroke="#4b5563"/>
+              <!-- slicer 2 -->
+              <rect x="95" y="10" width="80" height="60" rx="5" fill="#020617" stroke="#374151"/>
+              <text x="100" y="20" font-size="7" fill="#e5e7eb">Year</text>
+              <rect x="100" y="25" width="68" height="12" rx="3" fill="#111827" stroke="#4b5563"/>
+              <rect x="100" y="40" width="68" height="12" rx="3" fill="#111827" stroke="#4b5563"/>
+              <!-- chart -->
+              <rect x="10" y="80" width="230" height="60" rx="5" fill="#020617" stroke="#374151"/>
+              <rect x="30" y="105" width="15" height="25" fill="#2563eb"/>
+              <rect x="55" y="95" width="15" height="35" fill="#2563eb"/>
+              <rect x="80" y="90" width="15" height="40" fill="#2563eb"/>
+            </svg>
+            <div class="image-caption">Example slicers: click buttons to filter the PivotChart.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 8 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 9: Dashboard sheet -->
+    <section class="slide">
+      <h2>8. Step 7 – Create a Dashboard Sheet</h2>
+      <div class="layout-two-col">
+        <div>
+          <h3>8.1 New sheet for the dashboard</h3>
+          <ol>
+            <li>Click the <strong>+</strong> at the bottom of Excel to add a sheet.</li>
+            <li>Right-click the sheet tab → <strong>Rename</strong> → type <strong>Dashboard</strong>.</li>
+          </ol>
+          <h3>8.2 Move charts and slicers</h3>
+          <ol>
+            <li>Click a chart border → press <code>Ctrl + X</code> (Cut).</li>
+            <li>Go to the <strong>Dashboard</strong> sheet → press <code>Ctrl + V</code> (Paste).</li>
+            <li>Do the same for the second chart.</li>
+            <li>Cut and paste the slicer(s) to the Dashboard sheet as well.</li>
+          </ol>
+          <div class="box">
+            Arrange them so that slicers are on top or on the side, with charts underneath.
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- dashboard layout illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Dashboard with two charts and slicers">
+              <title>Dashboard layout</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <!-- slicers bar -->
+              <rect x="10" y="10" width="240" height="25" rx="5" fill="#020617" stroke="#374151"/>
+              <rect x="15" y="15" width="60" height="15" rx="3" fill="#111827" stroke="#4b5563"/>
+              <rect x="80" y="15" width="60" height="15" rx="3" fill="#111827" stroke="#4b5563"/>
+              <rect x="145" y="15" width="60" height="15" rx="3" fill="#111827" stroke="#4b5563"/>
+              <!-- chart 1 -->
+              <rect x="10" y="40" width="240" height="45" rx="5" fill="#020617" stroke="#374151"/>
+              <!-- chart 2 -->
+              <rect x="10" y="90" width="240" height="45" rx="5" fill="#020617" stroke="#374151"/>
+            </svg>
+            <div class="image-caption">Place slicers at the top and charts in the middle of the Dashboard sheet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 9 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10: Connect slicers -->
+    <section class="slide">
+      <h2>9. Step 8 – Connect Slicers to All PivotTables</h2>
+      <div class="layout-two-col">
+        <div>
+          <p>Make one slicer control <strong>all</strong> charts (all PivotTables behind them).</p>
+          <ol>
+            <li>Click on a slicer (e.g., the Date slicer).</li>
+            <li>On the ribbon, go to <span class="pill">Slicer</span> (Slicer Tools).</li>
+            <li>Click <strong>Report Connections</strong> or <strong>PivotTable Connections</strong>.</li>
+            <li>Tick every PivotTable that should respond to this slicer.</li>
+            <li>Click <strong>OK</strong>.</li>
+          </ol>
+          <p>Repeat for other slicers.</p>
+          <div class="box">
+            Now when you click a Year or Category:
+            <ul>
+              <li>All PivotTables update.</li>
+              <li>All PivotCharts update.</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="image-frame">
+            <!-- report connections illustration -->
+            <svg viewBox="0 0 260 150" aria-label="Slicer report connections window">
+              <title>Slicer report connections</title>
+              <rect x="0" y="0" width="260" height="150" rx="10" fill="#020617" stroke="#1f2937"/>
+              <rect x="10" y="15" width="240" height="15" fill="#111827"/>
+              <text x="15" y="25" font-size="8" fill="#e5e7eb">Report Connections</text>
+              <!-- table list -->
+              <rect x="10" y="35" width="240" height="90" fill="#020617"/>
+              <text x="15" y="50" font-size="7" fill="#e5e7eb">☑ PivotTable1 (Category)</text>
+              <text x="15" y="65" font-size="7" fill="#e5e7eb">☑ PivotTable2 (Region)</text>
+              <text x="15" y="80" font-size="7" fill="#9ca3af">☐ PivotTable3 (optional)</text>
+              <!-- ok button -->
+              <rect x="190" y="120" width="50" height="14" rx="3" fill="#2563eb"/>
+              <text x="205" y="129" font-size="8" fill="#e5e7eb">OK</text>
+            </svg>
+            <div class="image-caption">Connect the slicer to both PivotTables so both charts react.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 10 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button>Next ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: Recap/test -->
+    <section class="slide">
+      <h2>10. Step 9 – Test & Reflect</h2>
+      <div class="layout-two-col">
+        <div>
+          <div class="big-number">✓</div>
+          <p>You’ve turned your own dataset into an interactive Excel dashboard.</p>
+          <h3>Try this with your data</h3>
+          <ul>
+            <li>Click a single <strong>Year</strong> or <strong>Category</strong> in the slicer.</li>
+            <li>Try selecting multiple items (hold <code>Ctrl</code> while clicking).</li>
+            <li>Observe which bars go up or down in the charts.</li>
+            <li>Use the clear filter icon on the slicer to reset.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Quick mapping guide</h3>
+          <ul>
+            <li><strong>Category</strong> → Subject, Product, Question type, etc.</li>
+            <li><strong>Amount</strong> → Score, Sales, Quantity, Time spent, etc.</li>
+            <li><strong>Region/Group</strong> → Class, Campus, Store, Team, etc.</li>
+            <li><strong>Date</strong> → Exam date, Sale date, Submission date, etc.</li>
+          </ul>
+          <div class="box-note">
+            Once comfortable, students can add:
+            <ul>
+              <li>Top 10 categories by Amount.</li>
+              <li>Average score per student or per class.</li>
+              <li>Response counts per survey option.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bar">
+        <span class="slide-num">Slide 11 / 11</span>
+        <div class="controls">
+          <button>◀ Prev</button>
+          <button id="finishBtn">⏹ Restart</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const total = slides.length;
+      let index = 0;
+
+      function updateButtons() {
+        const currentSlide = slides[index];
+        const slideBtns = currentSlide.querySelectorAll(".controls button");
+        const prevDisabled = index === 0;
+        const nextDisabled = index === total - 1;
+
+        slideBtns.forEach(btn => {
+          if (btn.textContent.includes("Prev")) {
+            btn.disabled = prevDisabled;
+            btn.onclick = () => changeSlide(index - 1);
+          } else if (btn.textContent.includes("Next")) {
+            btn.disabled = nextDisabled;
+            btn.onclick = () => changeSlide(index + 1);
+          } else if (btn.id === "finishBtn") {
+            btn.onclick = () => changeSlide(0);
+          }
+        });
+
+        const globalPrev = document.getElementById("prevBtn");
+        const globalNext = document.getElementById("nextBtn");
+        if (globalPrev && globalNext) {
+          globalPrev.disabled = prevDisabled;
+          globalNext.disabled = nextDisabled;
+          globalPrev.onclick = () => changeSlide(index - 1);
+          globalNext.onclick = () => changeSlide(index + 1);
+        }
+      }
+
+      function changeSlide(newIndex) {
+        if (newIndex < 0 || newIndex >= total) return;
+        slides[index].classList.remove("active");
+        index = newIndex;
+        slides[index].classList.add("active");
+        updateButtons();
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") changeSlide(index + 1);
+        if (e.key === "ArrowLeft") changeSlide(index - 1);
+      });
+
+      updateButtons();
+    })();
+  </script>
+</body>
+</html>
